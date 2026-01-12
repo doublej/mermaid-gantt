@@ -25,24 +25,37 @@
 
 	const totalDays = $derived(diffDays(dateRange.start, dateRange.end) + 1);
 	const chartWidth = $derived(totalDays * DAY_WIDTH);
-	const chartHeight = $derived(gantt.data.tasks.length * ROW_HEIGHT + HEADER_HEIGHT);
+	// Total rows = sections + tasks
+	const totalRows = $derived(gantt.data.sections.length + gantt.data.tasks.length);
+	const chartHeight = $derived(totalRows * ROW_HEIGHT + HEADER_HEIGHT);
 
-	// Calculate task positions
-	const taskPositions = $derived(
-		gantt.data.tasks.map((task) => {
-			const startOffset = diffDays(dateRange.start, task.startDate);
-			const duration = diffDays(task.startDate, task.endDate) + 1;
-			const taskIndex = gantt.allTasksFlat.findIndex((t) => t.id === task.id);
+	// Calculate task positions (accounting for section header rows)
+	const taskPositions = $derived.by(() => {
+		const positions: { task: typeof gantt.data.tasks[0]; x: number; y: number; width: number; height: number }[] = [];
+		let rowIndex = 0;
 
-			return {
-				task,
-				x: startOffset * DAY_WIDTH,
-				y: taskIndex * ROW_HEIGHT + HEADER_HEIGHT,
-				width: duration * DAY_WIDTH,
-				height: ROW_HEIGHT - 8
-			};
-		})
-	);
+		for (const { section, tasks } of gantt.tasksBySection) {
+			// Section header takes one row
+			rowIndex++;
+
+			// Each task in section
+			for (const task of tasks) {
+				const startOffset = diffDays(dateRange.start, task.startDate);
+				const duration = diffDays(task.startDate, task.endDate) + 1;
+
+				positions.push({
+					task,
+					x: startOffset * DAY_WIDTH,
+					y: rowIndex * ROW_HEIGHT + HEADER_HEIGHT,
+					width: duration * DAY_WIDTH,
+					height: ROW_HEIGHT - 8
+				});
+				rowIndex++;
+			}
+		}
+
+		return positions;
+	});
 
 	// Build position lookup for dependencies
 	const positionMap = $derived(
@@ -123,7 +136,7 @@
 				startDate={dateRange.start}
 				{totalDays}
 				dayWidth={DAY_WIDTH}
-				rowCount={gantt.data.tasks.length}
+				rowCount={totalRows}
 				rowHeight={ROW_HEIGHT}
 				headerHeight={HEADER_HEIGHT}
 			/>
