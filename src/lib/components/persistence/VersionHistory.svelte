@@ -41,11 +41,13 @@
 
 	function formatRelativeTime(timestamp: number): string {
 		const diff = Date.now() - timestamp;
+		const seconds = Math.floor(diff / 1000);
 		const minutes = Math.floor(diff / 60000);
 		const hours = Math.floor(diff / 3600000);
 		const days = Math.floor(diff / 86400000);
 
-		if (minutes < 1) return 'Just now';
+		if (seconds < 10) return 'Just now';
+		if (seconds < 60) return `${seconds}s ago`;
 		if (minutes < 60) return `${minutes}m ago`;
 		if (hours < 24) return `${hours}h ago`;
 		return `${days}d ago`;
@@ -165,7 +167,7 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 					<p class="mt-2 text-sm text-gray-500">No versions yet</p>
-					<p class="mt-1 text-xs text-gray-400">Auto-saves happen every hour</p>
+					<p class="mt-1 text-xs text-gray-400">Auto-saves on every change (max 1/min)</p>
 				</div>
 			{/if}
 		</div>
@@ -179,7 +181,7 @@
 				</div>
 				<div class="flex items-center gap-1">
 					<span class="w-2 h-2 bg-gray-300 rounded-full"></span>
-					Auto-save (hourly)
+					Auto (max 1/min)
 				</div>
 			</div>
 		</div>

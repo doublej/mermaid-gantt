@@ -6,26 +6,30 @@
 		totalDays: number;
 		dayWidth: number;
 		height: number;
-		zoom: number;
+		zoomLevel: number;
 	}
 
-	let { startDate, totalDays, dayWidth, height, zoom }: Props = $props();
+	let { startDate, totalDays, dayWidth, height, zoomLevel }: Props = $props();
+
+	// Label step by zoom level: Day=1, Week=7, 2Week=14, Month=30, Quarter=90
+	const LABEL_STEPS = [1, 7, 14, 30, 90] as const;
+	const labelStep = $derived(LABEL_STEPS[zoomLevel] ?? 1);
 
 	const labels = $derived.by(() => {
-		const result: { date: Date; x: number; label: string; isWeekend: boolean }[] = [];
+		const result: { date: Date; x: number; width: number; label: string; isWeekend: boolean }[] = [];
 
-		for (let i = 0; i < totalDays; i += zoom) {
+		for (let i = 0; i < totalDays; i += labelStep) {
 			const date = addDays(startDate, i);
 			const dayOfWeek = date.getDay();
 			const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
 			let label: string;
-			if (zoom >= 7) {
+			if (zoomLevel >= 3) {
+				// Month/Quarter view
+				label = date.toLocaleDateString('en-US', { month: 'short' });
+			} else if (zoomLevel >= 1) {
 				// Week view
 				label = `W${getWeekNumber(date)}`;
-			} else if (zoom >= 30) {
-				// Month view
-				label = date.toLocaleDateString('en-US', { month: 'short' });
 			} else {
 				// Day view
 				label = date.getDate().toString();
@@ -34,6 +38,7 @@
 			result.push({
 				date,
 				x: i * dayWidth,
+				width: labelStep * dayWidth,
 				label,
 				isWeekend
 			});
@@ -42,9 +47,9 @@
 		return result;
 	});
 
-	// Month labels for multi-day views
+	// Month labels for multi-day views (show when zoomed in enough)
 	const monthLabels = $derived.by(() => {
-		if (zoom > 7) return [];
+		if (zoomLevel > 2) return [];
 
 		const months: { month: string; x: number; width: number }[] = [];
 		let currentMonth = -1;
@@ -114,18 +119,18 @@
 	{/each}
 
 	<!-- Day labels (bottom row) -->
-	{#each labels as { x, label, isWeekend }}
+	{#each labels as { x, width, label, isWeekend }}
 		<g transform="translate({x}, {height / 2})">
 			<rect
 				x="0"
 				y="0"
-				width={dayWidth * zoom}
+				{width}
 				height={height / 2}
 				fill={isWeekend ? '#f3f4f6' : 'transparent'}
 				stroke="#e5e7eb"
 			/>
 			<text
-				x={(dayWidth * zoom) / 2}
+				x={width / 2}
 				y={height / 4 + 4}
 				text-anchor="middle"
 				class="text-xs fill-gray-500"

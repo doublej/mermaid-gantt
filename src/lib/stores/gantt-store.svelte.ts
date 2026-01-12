@@ -8,9 +8,17 @@ import type {
 	HistoryEntry,
 	ClipboardTask
 } from '$lib/types';
-import { addDays, startOfDay } from '$lib/utils/date-utils';
+import { addDays, addMonths, startOfDay } from '$lib/utils/date-utils';
 
 const GANTT_CONTEXT = Symbol('gantt');
+
+export const ZOOM_LEVELS = [
+	{ name: 'Day', dayWidth: 60 },
+	{ name: 'Week', dayWidth: 20 },
+	{ name: '2 Week', dayWidth: 10 },
+	{ name: 'Month', dayWidth: 4 },
+	{ name: 'Quarter', dayWidth: 1.5 }
+] as const;
 
 function generateId(): string {
 	return Math.random().toString(36).slice(2, 9);
@@ -22,6 +30,19 @@ function defaultConfig(): GanttConfig {
 		dateFormat: 'YYYY-MM-DD',
 		axisFormat: '%Y-%m-%d',
 		excludes: []
+	};
+}
+
+function defaultViewState(focusedTaskId: string | null = null): ViewState {
+	return {
+		zoomLevel: 0,
+		scrollX: 0,
+		scrollY: 0,
+		selectedTaskId: null,
+		focusedTaskId,
+		editingTaskId: null,
+		dateRangeStart: null,
+		dateRangeEnd: null
 	};
 }
 
@@ -50,14 +71,9 @@ export class GanttStore {
 	// Reactive state using Svelte 5 runes
 	data = $state<GanttData>(defaultData());
 
-	view = $state<ViewState>({
-		zoom: 1,
-		scrollX: 0,
-		scrollY: 0,
-		selectedTaskId: null,
-		focusedTaskId: null,
-		editingTaskId: null
-	});
+	view = $state<ViewState>(defaultViewState());
+
+	currentZoom = $derived(ZOOM_LEVELS[this.view.zoomLevel]);
 
 	// History for undo/redo
 	private history: HistoryEntry[] = [];
@@ -360,15 +376,31 @@ export class GanttStore {
 
 	// Zoom
 	zoomIn(): void {
-		this.view.zoom = Math.max(1, this.view.zoom / 2);
+		this.view.zoomLevel = Math.max(0, this.view.zoomLevel - 1);
 	}
 
 	zoomOut(): void {
-		this.view.zoom = Math.min(30, this.view.zoom * 2);
+		this.view.zoomLevel = Math.min(ZOOM_LEVELS.length - 1, this.view.zoomLevel + 1);
 	}
 
 	resetZoom(): void {
-		this.view.zoom = 1;
+		this.view.zoomLevel = 0;
+	}
+
+	// Date range
+	extendRangeStart(months: number): void {
+		const current = this.view.dateRangeStart ?? startOfDay(new Date());
+		this.view.dateRangeStart = addMonths(current, -months);
+	}
+
+	extendRangeEnd(months: number): void {
+		const current = this.view.dateRangeEnd ?? startOfDay(new Date());
+		this.view.dateRangeEnd = addMonths(current, months);
+	}
+
+	resetDateRange(): void {
+		this.view.dateRangeStart = null;
+		this.view.dateRangeEnd = null;
 	}
 
 	// Config
@@ -380,14 +412,7 @@ export class GanttStore {
 	// Import/Export
 	importData(data: GanttData): void {
 		this.data = data;
-		this.view = {
-			zoom: 1,
-			scrollX: 0,
-			scrollY: 0,
-			selectedTaskId: null,
-			focusedTaskId: data.tasks[0]?.id ?? null,
-			editingTaskId: null
-		};
+		this.view = defaultViewState(data.tasks[0]?.id ?? null);
 		this.saveHistory('Import data');
 	}
 
@@ -400,14 +425,7 @@ export class GanttStore {
 		this.data = defaultData();
 		this.history = [];
 		this.historyIndex = -1;
-		this.view = {
-			zoom: 1,
-			scrollX: 0,
-			scrollY: 0,
-			selectedTaskId: null,
-			focusedTaskId: this.data.tasks[0]?.id ?? null,
-			editingTaskId: null
-		};
+		this.view = defaultViewState(this.data.tasks[0]?.id ?? null);
 		this.saveHistory('Reset');
 	}
 }

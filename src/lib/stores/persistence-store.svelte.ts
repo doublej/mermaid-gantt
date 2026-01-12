@@ -14,9 +14,9 @@ import type { GanttStore } from './gantt-store.svelte';
 
 const PERSISTENCE_CONTEXT = Symbol('persistence');
 const STORAGE_PREFIX = 'gantt:';
-const MAX_AUTO_VERSIONS = 24;
+const MAX_AUTO_VERSIONS = 60; // Keep ~1 hour of history at 1/min
 const MAX_MANUAL_VERSIONS = 10;
-const AUTO_SNAPSHOT_INTERVAL = 60 * 60 * 1000; // 1 hour
+const AUTO_SNAPSHOT_INTERVAL = 60 * 1000; // 1 minute
 
 function generateId(): string {
 	return Math.random().toString(36).slice(2, 9);

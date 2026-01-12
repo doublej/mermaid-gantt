@@ -8,6 +8,12 @@ export function addDays(date: Date, days: number): Date {
 	return result;
 }
 
+export function addMonths(date: Date, months: number): Date {
+	const result = new Date(date);
+	result.setMonth(result.getMonth() + months);
+	return result;
+}
+
 export function diffDays(start: Date, end: Date): number {
 	return Math.ceil((end.getTime() - start.getTime()) / MS_PER_DAY);
 }
