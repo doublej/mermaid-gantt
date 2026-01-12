@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* Custom theme configuration */
+@theme {
+	/* Colors */
+	--color-gantt-primary: #3b82f6;
+	--color-gantt-primary-hover: #2563eb;
+	--color-gantt-active: #22c55e;
+	--color-gantt-done: #6b7280;
+	--color-gantt-crit: #ef4444;
+	--color-gantt-milestone: #8b5cf6;
+	--color-gantt-grid: #e5e7eb;
+	--color-gantt-grid-dark: #d1d5db;
+	--color-gantt-section-bg: #f9fafb;
+	--color-gantt-focus-ring: #3b82f6;
+
+	/* Fonts */
+	--font-family-sans: "Inter", system-ui, sans-serif;
+	--font-family-mono: "JetBrains Mono", ui-monospace, monospace;
+
+	/* Spacing for gantt */
+	--spacing-row-height: 40px;
+	--spacing-header-height: 48px;
+	--spacing-sidebar-width: 200px;
+}
+
+/* Base styles */
+@layer base {
+	html {
+		font-family: var(--font-family-sans);
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	body {
+		@apply bg-gray-50 text-gray-900;
+	}
+
+	/* Focus visible styles for keyboard navigation */
+	:focus-visible {
+		@apply outline-none ring-2 ring-gantt-focus-ring ring-offset-2;
+	}
+
+	/* Remove focus ring for mouse users */
+	:focus:not(:focus-visible) {
+		@apply outline-none ring-0;
+	}
+}
+
+/* Keyboard shortcut badges */
+@layer components {
+	.kbd {
+		@apply inline-flex items-center justify-center min-w-6 h-6 px-1.5;
+		@apply bg-gray-100 border border-gray-300 rounded text-xs font-mono font-medium text-gray-700;
+		@apply shadow-sm;
+	}
+
+	.kbd-sm {
+		@apply min-w-5 h-5 px-1 text-[10px];
+	}
+}
