@@ -60,6 +60,10 @@ export const keyBindings: KeyBinding[] = [
 	{ key: 'Z', modifiers: ['ctrl', 'shift'], action: 'redo', description: 'Redo', category: 'global' },
 	{ key: 'y', modifiers: ['ctrl'], action: 'redo', description: 'Redo', category: 'global' },
 	{ key: 'Y', modifiers: ['ctrl'], action: 'redo', description: 'Redo', category: 'global' },
+	{ key: 'h', modifiers: ['ctrl'], action: 'openHistory', description: 'Version history', category: 'global' },
+	{ key: 'H', modifiers: ['ctrl'], action: 'openHistory', description: 'Version history', category: 'global' },
+	{ key: 's', modifiers: ['ctrl', 'shift'], action: 'createSnapshot', description: 'Create snapshot', category: 'global' },
+	{ key: 'S', modifiers: ['ctrl', 'shift'], action: 'createSnapshot', description: 'Create snapshot', category: 'global' },
 	{ key: 'Escape', modifiers: [], action: 'cancel', description: 'Cancel / Close modal', category: 'global' },
 ];
 

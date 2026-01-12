@@ -3,6 +3,7 @@
 	import { createGanttStore, setGanttContext } from '$lib/stores/gantt-store.svelte';
 	import { createKeyboardStore, setKeyboardContext } from '$lib/stores/keyboard-store.svelte';
 	import { createOnboardingStore, setOnboardingContext } from '$lib/stores/onboarding-store.svelte';
+	import { createPersistenceStore, setPersistenceContext } from '$lib/stores/persistence-store.svelte';
 
 	import GanttChart from '$lib/components/gantt/GanttChart.svelte';
 	import KeyboardHandler from '$lib/components/keyboard/KeyboardHandler.svelte';
@@ -12,22 +13,51 @@
 	import ContextualHint from '$lib/components/onboarding/ContextualHint.svelte';
 	import TaskEditor from '$lib/components/editor/TaskEditor.svelte';
 	import ImportExport from '$lib/components/io/ImportExport.svelte';
+	import ProjectPicker from '$lib/components/persistence/ProjectPicker.svelte';
+	import SaveStatus from '$lib/components/persistence/SaveStatus.svelte';
+	import VersionHistory from '$lib/components/persistence/VersionHistory.svelte';
 
 	// Create stores
 	const gantt = createGanttStore();
 	const keyboard = createKeyboardStore();
 	const onboarding = createOnboardingStore();
+	const persistence = createPersistenceStore();
 
 	// Provide context
 	setGanttContext(gantt);
 	setKeyboardContext(keyboard);
 	setOnboardingContext(onboarding);
+	setPersistenceContext(persistence);
 
-	// Show tutorial on first visit
+	// Track data hash for change detection
+	let lastDataHash = '';
+
+	// Watch for data changes and trigger autosave
+	$effect(() => {
+		const currentHash = JSON.stringify(gantt.data);
+		if (lastDataHash && currentHash !== lastDataHash) {
+			persistence.markDirty();
+		}
+		lastDataHash = currentHash;
+	});
+
+	// Show tutorial on first visit + setup persistence
 	onMount(() => {
+		persistence.setupAutosave(gantt);
+
 		if (!onboarding.hasCompletedTutorial) {
 			onboarding.startTutorial();
 		}
+
+		// Save on page unload
+		const handleBeforeUnload = () => {
+			persistence.handleBeforeUnload();
+		};
+		window.addEventListener('beforeunload', handleBeforeUnload);
+
+		return () => {
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+		};
 	});
 </script>
 
@@ -37,14 +67,13 @@
 
 	<!-- Header -->
 	<header class="bg-white border-b border-gray-200">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="w-full px-4">
 			<div class="flex items-center justify-between h-16">
 				<div class="flex items-center gap-4">
 					<h1 class="text-xl font-semibold text-gray-900">Gantt Chart Editor</h1>
-					{#if gantt.data.config.title}
-						<span class="text-gray-400">/</span>
-						<span class="text-gray-600">{gantt.data.config.title}</span>
-					{/if}
+					<span class="text-gray-300">/</span>
+					<ProjectPicker />
+					<SaveStatus />
 				</div>
 
 				<div class="flex items-center gap-2">
@@ -72,26 +101,14 @@
 
 					<div class="w-px h-6 bg-gray-200 mx-2"></div>
 
-					<!-- Zoom controls -->
+					<!-- Version History -->
 					<button
-						onclick={() => gantt.zoomOut()}
+						onclick={() => persistence.openHistory()}
 						class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-						title="Zoom out (Ctrl+-)"
+						title="Version History (Ctrl+H)"
 					>
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
-						</svg>
-					</button>
-					<span class="text-sm text-gray-500 min-w-12 text-center">
-						{gantt.view.zoom === 1 ? 'Day' : gantt.view.zoom === 7 ? 'Week' : 'Month'}
-					</span>
-					<button
-						onclick={() => gantt.zoomIn()}
-						class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-						title="Zoom in (Ctrl++)"
-					>
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 						</svg>
 					</button>
 
@@ -131,7 +148,7 @@
 	</header>
 
 	<!-- Main content -->
-	<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+	<main class="w-full px-4 py-6">
 		<!-- Quick hint bar -->
 		<div class="flex items-center justify-between mb-4">
 			<div class="flex items-center gap-2 text-sm text-gray-500">
@@ -177,4 +194,5 @@
 	<TaskEditor />
 	<ImportExport />
 	<ContextualHint />
+	<VersionHistory />
 </div>

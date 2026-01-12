@@ -2,10 +2,12 @@
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
 	import { getKeyboardContext } from '$lib/stores/keyboard-store.svelte';
 	import { getOnboardingContext } from '$lib/stores/onboarding-store.svelte';
+	import { getPersistenceContext } from '$lib/stores/persistence-store.svelte';
 
 	const gantt = getGanttContext();
 	const keyboard = getKeyboardContext();
 	const onboarding = getOnboardingContext();
+	const persistence = getPersistenceContext();
 
 	function handleKeyDown(event: KeyboardEvent) {
 		// Skip if user is typing in an input
@@ -149,8 +151,15 @@
 			case 'redo':
 				gantt.redo();
 				return true;
+			case 'openHistory':
+				persistence.openHistory();
+				return true;
+			case 'createSnapshot':
+				persistence.createSnapshot();
+				return true;
 			case 'cancel':
 				keyboard.closeAllModals();
+				persistence.closeHistory();
 				gantt.view.editingTaskId = null;
 				gantt.view.selectedTaskId = null;
 				return true;

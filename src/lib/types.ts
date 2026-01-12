@@ -31,12 +31,14 @@ export interface GanttData {
 }
 
 export interface ViewState {
-	zoom: number; // 1 = day, 7 = week, 30 = month
+	zoomLevel: number; // index into ZOOM_LEVELS array
 	scrollX: number;
 	scrollY: number;
 	selectedTaskId: string | null;
 	focusedTaskId: string | null;
 	editingTaskId: string | null;
+	dateRangeStart: Date | null; // null = auto-calculate from tasks
+	dateRangeEnd: Date | null; // null = auto-calculate from tasks
 }
 
 // Keyboard system types
@@ -84,3 +86,42 @@ export interface ClipboardTask {
 	task: Omit<Task, 'id'>;
 	timestamp: number;
 }
+
+// Persistence types
+export interface ProjectMeta {
+	id: string;
+	name: string;
+	createdAt: number;
+	updatedAt: number;
+}
+
+export interface ProjectVersion {
+	id: string;
+	name: string | null; // null = auto-snapshot, string = manual
+	timestamp: number;
+	data: SerializedGanttData;
+}
+
+export interface SerializedGanttData {
+	config: GanttConfig;
+	sections: Section[];
+	tasks: SerializedTask[];
+}
+
+export interface SerializedTask {
+	id: string;
+	title: string;
+	sectionId: string | null;
+	startDate: string; // ISO string
+	endDate: string; // ISO string
+	status: TaskStatus;
+	dependencies: string[];
+}
+
+export interface ProjectData {
+	meta: ProjectMeta;
+	current: SerializedGanttData;
+	versions: ProjectVersion[];
+}
+
+export type SaveStatus = 'saved' | 'saving' | 'unsaved';
