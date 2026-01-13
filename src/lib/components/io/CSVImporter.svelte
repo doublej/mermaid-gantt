@@ -8,13 +8,22 @@
 	interface Props {
 		onClose: () => void;
 		onImport: (data: GanttData) => void;
+		initialContent?: string | null;
 	}
 
-	const { onClose, onImport }: Props = $props();
+	const { onClose, onImport, initialContent = null }: Props = $props();
 	const gantt = getGanttContext();
 
 	// State
 	let csvContent = $state('');
+
+	// Initialize with content from file drop
+	$effect(() => {
+		if (initialContent && !csvContent) {
+			csvContent = initialContent;
+			parseCSVContent();
+		}
+	});
 	let parseResult = $state<{ headers: string[]; rows: string[][]; errors: string[] } | null>(null);
 	let dateFormat = $state('YYYY-MM-DD');
 	let importErrors = $state<string[]>([]);

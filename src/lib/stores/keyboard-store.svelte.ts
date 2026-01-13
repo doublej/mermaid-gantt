@@ -93,6 +93,7 @@ export class KeyboardStore {
 
 	// Component-specific state (will be moved to components in Phase 2)
 	importExportMode = $state<'import' | 'export'>('export');
+	importInitialContent = $state<{ content: string; format: 'mermaid' | 'json' | 'csv' } | null>(null);
 	smartImportInitialText = $state<string | null>(null);
 
 	// Grouped bindings for display
@@ -164,8 +165,9 @@ export class KeyboardStore {
 		this.mode = 'help';
 	}
 
-	openImport(): void {
+	openImport(initialContent?: { content: string; format: 'mermaid' | 'json' | 'csv' }): void {
 		this.importExportMode = 'import';
+		this.importInitialContent = initialContent ?? null;
 		this.mode = 'import-export';
 	}
 
@@ -181,6 +183,7 @@ export class KeyboardStore {
 
 	closeAllModals(): void {
 		this.smartImportInitialText = null;
+		this.importInitialContent = null;
 		this.mode = 'normal';
 	}
 

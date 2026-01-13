@@ -24,6 +24,21 @@
 	let importFormat = $state<'mermaid' | 'json' | 'csv'>('mermaid');
 	let importError = $state<string | null>(null);
 	let showCSVImporter = $state(false);
+	let csvInitialContent = $state<string | null>(null);
+
+	// Handle initial content from file drop
+	$effect(() => {
+		if (keyboard.showImportExport && keyboard.importInitialContent) {
+			importFormat = keyboard.importInitialContent.format;
+			if (keyboard.importInitialContent.format === 'csv') {
+				csvInitialContent = keyboard.importInitialContent.content;
+				showCSVImporter = true;
+			} else {
+				importText = keyboard.importInitialContent.content;
+			}
+			keyboard.importInitialContent = null;
+		}
+	});
 
 	// Export state
 	let exportFormat = $state<'mermaid' | 'json' | 'csv'>('mermaid');
@@ -41,6 +56,7 @@
 		importText = '';
 		importError = null;
 		showCSVImporter = false;
+		csvInitialContent = null;
 		keyboard.closeAllModals();
 	}
 
@@ -202,7 +218,7 @@
 	>
 		{#if showCSVImporter}
 			<div class="io-modal">
-				<CSVImporter onClose={() => (showCSVImporter = false)} onImport={handleCSVImport} />
+				<CSVImporter onClose={() => { showCSVImporter = false; csvInitialContent = null; }} onImport={handleCSVImport} initialContent={csvInitialContent} />
 			</div>
 		{:else}
 			<div class="io-modal">
