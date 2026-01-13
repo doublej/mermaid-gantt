@@ -62,6 +62,8 @@ export const keyBindings: KeyBinding[] = [
 	{ key: 'Y', modifiers: ['ctrl'], action: 'redo', description: 'Redo', category: 'global' },
 	{ key: 'h', modifiers: ['ctrl'], action: 'openHistory', description: 'Version history', category: 'global' },
 	{ key: 'H', modifiers: ['ctrl'], action: 'openHistory', description: 'Version history', category: 'global' },
+	{ key: 'p', modifiers: ['ctrl'], action: 'openFileBrowser', description: 'Open projects', category: 'global' },
+	{ key: 'P', modifiers: ['ctrl'], action: 'openFileBrowser', description: 'Open projects', category: 'global' },
 	{ key: 's', modifiers: ['ctrl', 'shift'], action: 'createSnapshot', description: 'Create snapshot', category: 'global' },
 	{ key: 'S', modifiers: ['ctrl', 'shift'], action: 'createSnapshot', description: 'Create snapshot', category: 'global' },
 	{ key: 'Escape', modifiers: [], action: 'cancel', description: 'Cancel / Close modal', category: 'global' },
@@ -197,6 +199,16 @@ function formatKeyDisplay(key: string): string {
 	return keyMap[key] ?? key.toUpperCase();
 }
 
+// Get unique bindings for command palette
+export function getUniqueBindings(): KeyBinding[] {
+	const seen = new Set<string>();
+	return keyBindings.filter(binding => {
+		if (seen.has(binding.action)) return false;
+		seen.add(binding.action);
+		return true;
+	});
+}
+
 // Context helpers
 export function createKeyboardStore(): KeyboardStore {
 	return new KeyboardStore();
@@ -212,14 +224,4 @@ export function getKeyboardContext(): KeyboardStore {
 		throw new Error('KeyboardStore not found in context');
 	}
 	return store;
-}
-
-// Get unique bindings for command palette
-export function getUniqueBindings(): KeyBinding[] {
-	const seen = new Set<string>();
-	return keyBindings.filter(binding => {
-		if (seen.has(binding.action)) return false;
-		seen.add(binding.action);
-		return true;
-	});
 }

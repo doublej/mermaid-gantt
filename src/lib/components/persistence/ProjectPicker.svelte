@@ -58,7 +58,7 @@
 <div class="relative">
 	<button
 		onclick={toggleDropdown}
-		class="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
+		class="btn-secondary py-1.5"
 	>
 		<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -74,27 +74,27 @@
 		<button class="fixed inset-0 z-40" onclick={closeDropdown} aria-label="Close"></button>
 
 		<!-- Dropdown -->
-		<div class="absolute left-0 top-full mt-1 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+		<div class="dropdown-menu">
 			{#if isCreating}
-				<div class="p-3 border-b border-gray-100">
+				<div class="p-3 border-b border-default">
 					<input
 						type="text"
 						bind:value={newProjectName}
 						placeholder="Project name..."
-						class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+						class="w-full px-3 py-2 text-sm border border-default rounded-lg bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
 						onkeydown={(e) => e.key === 'Enter' && createProject()}
 					/>
 					<div class="flex gap-2 mt-2">
 						<button
 							onclick={createProject}
 							disabled={!newProjectName.trim()}
-							class="flex-1 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+							class="btn-primary flex-1 py-1.5 disabled:opacity-50"
 						>
 							Create
 						</button>
 						<button
 							onclick={() => (isCreating = false)}
-							class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+							class="btn-secondary py-1.5"
 						>
 							Cancel
 						</button>
@@ -103,7 +103,7 @@
 			{:else}
 				<button
 					onclick={startCreating}
-					class="w-full flex items-center gap-2 px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 border-b border-gray-100"
+					class="w-full flex items-center gap-2 px-4 py-3 text-sm text-accent hover:bg-[var(--color-accent-subtle)] border-b border-default"
 				>
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -113,25 +113,26 @@
 			{/if}
 
 			<div class="max-h-64 overflow-y-auto">
-				{#each persistence.projects.sort((a, b) => b.updatedAt - a.updatedAt) as project}
+				{#each [...persistence.projects].sort((a, b) => b.updatedAt - a.updatedAt) as project}
 					<div
-						class="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-gray-50 group {project.id === persistence.currentProjectId ? 'bg-blue-50' : ''}"
+						class="project-item"
+						class:active={project.id === persistence.currentProjectId}
 					>
 						<button
 							onclick={() => selectProject(project.id)}
 							class="flex-1 text-left min-w-0"
 						>
-							<div class="font-medium truncate {project.id === persistence.currentProjectId ? 'text-blue-600' : 'text-gray-900'}">
+							<div class="font-medium truncate" class:text-accent={project.id === persistence.currentProjectId}>
 								{project.name}
 							</div>
-							<div class="text-xs text-gray-400">
+							<div class="text-xs text-tertiary">
 								{formatDate(project.updatedAt)}
 							</div>
 						</button>
 						{#if project.id !== persistence.currentProjectId}
 							<button
 								onclick={(e) => deleteProject(e, project.id)}
-								class="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
+								class="delete-btn"
 								title="Delete project"
 							>
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +144,7 @@
 				{/each}
 
 				{#if persistence.projects.length === 0}
-					<div class="px-4 py-6 text-sm text-gray-400 text-center">
+					<div class="px-4 py-6 text-sm text-tertiary text-center">
 						No projects yet
 					</div>
 				{/if}
@@ -151,3 +152,53 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	.dropdown-menu {
+		position: absolute;
+		left: 0;
+		top: 100%;
+		margin-top: 0.25rem;
+		width: 18rem;
+		background-color: var(--color-surface);
+		border-radius: 0.5rem;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+		border: 1px solid var(--color-border);
+		z-index: 50;
+		overflow: hidden;
+	}
+
+	.project-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		padding: 0.625rem 1rem;
+		font-size: 0.875rem;
+		color: var(--color-text);
+		transition: background-color 0.15s ease;
+	}
+
+	.project-item:hover {
+		background-color: var(--color-surface-elevated);
+	}
+
+	.project-item.active {
+		background-color: var(--color-accent-subtle);
+	}
+
+	.delete-btn {
+		padding: 0.25rem;
+		color: var(--color-text-tertiary);
+		opacity: 0;
+		transition: opacity 0.15s ease, color 0.15s ease;
+	}
+
+	.project-item:hover .delete-btn {
+		opacity: 1;
+	}
+
+	.delete-btn:hover {
+		color: var(--color-status-critical);
+	}
+</style>

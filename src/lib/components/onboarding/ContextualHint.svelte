@@ -45,33 +45,29 @@
 </script>
 
 {#if hint}
-	<div
-		class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-full shadow-lg text-sm"
-		role="status"
-		aria-live="polite"
-	>
-		<span class="text-gray-300">{hint.text}</span>
+	<div class="hint-bar" role="status" aria-live="polite">
+		<span class="hint-text">{hint.text}</span>
 		{#each hint.keys as key, i}
 			{#if i > 0}
-				<span class="text-gray-400">+</span>
+				<span class="hint-separator">+</span>
 			{/if}
-			<kbd class="kbd kbd-sm bg-gray-700 border-gray-600 text-white">{key}</kbd>
+			<kbd class="hint-key">{key}</kbd>
 		{/each}
-		<span class="text-gray-300">{hint.suffix}</span>
+		<span class="hint-text">{hint.suffix}</span>
 
 		{#if hint.keys2}
 			{#each hint.keys2 as key, i}
 				{#if i > 0}
-					<span class="text-gray-400">+</span>
+					<span class="hint-separator">+</span>
 				{/if}
-				<kbd class="kbd kbd-sm bg-gray-700 border-gray-600 text-white">{key}</kbd>
+				<kbd class="hint-key">{key}</kbd>
 			{/each}
-			<span class="text-gray-300">{hint.suffix2}</span>
+			<span class="hint-text">{hint.suffix2}</span>
 		{/if}
 
 		<button
 			onclick={() => onboarding.toggleHints()}
-			class="ml-2 p-1 hover:bg-gray-700 rounded"
+			class="hint-close"
 			aria-label="Hide hints"
 		>
 			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,3 +76,59 @@
 		</button>
 	</div>
 {/if}
+
+<style>
+	.hint-bar {
+		position: fixed;
+		bottom: 1.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 40;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 1rem;
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 9999px;
+		box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+		font-size: 0.875rem;
+	}
+
+	.hint-text {
+		color: var(--color-text-secondary);
+	}
+
+	.hint-separator {
+		color: var(--color-text-tertiary);
+	}
+
+	.hint-key {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.5rem;
+		height: 1.5rem;
+		padding: 0 0.375rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		font-family: var(--font-family-mono);
+		background-color: var(--color-surface-elevated);
+		color: var(--color-text);
+		border: 1px solid var(--color-border);
+		border-radius: 0.25rem;
+	}
+
+	.hint-close {
+		margin-left: 0.5rem;
+		padding: 0.25rem;
+		color: var(--color-text-tertiary);
+		border-radius: 0.25rem;
+		transition: color 0.15s ease, background-color 0.15s ease;
+	}
+
+	.hint-close:hover {
+		color: var(--color-text);
+		background-color: var(--color-surface-elevated);
+	}
+</style>

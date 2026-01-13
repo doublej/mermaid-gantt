@@ -17,18 +17,18 @@
 
 	const gantt = getGanttContext();
 
-	// Status-based colors
+	// Status-based colors using CSS variables
 	const colors = $derived.by(() => {
 		switch (task.status) {
 			case 'done':
-				return { fill: '#6b7280', stroke: '#4b5563', text: '#ffffff' };
+				return { fill: 'var(--color-status-done)', text: '#ffffff' };
 			case 'crit':
-				return { fill: '#ef4444', stroke: '#dc2626', text: '#ffffff' };
+				return { fill: 'var(--color-status-critical)', text: '#ffffff' };
 			case 'milestone':
-				return { fill: '#8b5cf6', stroke: '#7c3aed', text: '#ffffff' };
+				return { fill: 'var(--color-status-milestone)', text: '#ffffff' };
 			case 'active':
 			default:
-				return { fill: '#3b82f6', stroke: '#2563eb', text: '#ffffff' };
+				return { fill: 'var(--color-accent)', text: '#ffffff' };
 		}
 	});
 
@@ -45,14 +45,11 @@
 	const EDGE_WIDTH = 8;
 
 	// Preview positions during drag
-	const previewX = $derived.by(() => {
-		if (dragMode === 'move') return x + previewDelta;
-		if (dragMode === 'resize-start') return x + previewDelta;
-		return x;
-	});
+	const previewX = $derived(
+		dragMode === 'move' || dragMode === 'resize-start' ? x + previewDelta : x
+	);
 
 	const previewWidth = $derived.by(() => {
-		if (dragMode === 'move') return width;
 		if (dragMode === 'resize-start') return Math.max(dayWidth, width - previewDelta);
 		if (dragMode === 'resize-end') return Math.max(dayWidth, width + previewDelta);
 		return width;
@@ -87,11 +84,10 @@
 
 	function endDrag() {
 		cleanupDragListeners();
-		const daysMoved = Math.round(previewDelta / dayWidth);
-		if (daysMoved !== 0) {
-			if (dragMode === 'move') gantt.moveTask(task.id, daysMoved);
-			else if (dragMode === 'resize-start') gantt.moveTaskStart(task.id, daysMoved);
-			else if (dragMode === 'resize-end') gantt.moveTaskEnd(task.id, daysMoved);
+		const days = Math.round(previewDelta / dayWidth);
+		if (days !== 0) {
+			const actions = { move: gantt.moveTask, 'resize-start': gantt.moveTaskStart, 'resize-end': gantt.moveTaskEnd };
+			actions[dragMode as keyof typeof actions]?.(task.id, days);
 		}
 		resetDragState();
 	}
@@ -155,8 +151,8 @@
 		<polygon
 			points="{centerX},{centerY - size} {centerX + size},{centerY} {centerX},{centerY + size} {centerX - size},{centerY}"
 			fill={colors.fill}
-			stroke={isSelected ? '#1d4ed8' : isFocused ? '#60a5fa' : colors.stroke}
-			stroke-width={isSelected ? 3 : isFocused ? 2 : 1}
+			stroke={isSelected ? 'var(--color-accent-hover)' : isFocused ? 'var(--color-accent)' : 'transparent'}
+			stroke-width={isSelected ? 3 : isFocused ? 2 : 0}
 			class:opacity-80={isDragging}
 		/>
 
@@ -190,8 +186,8 @@
 			{height}
 			rx="4"
 			fill={colors.fill}
-			stroke={isSelected ? '#1d4ed8' : isFocused ? '#60a5fa' : colors.stroke}
-			stroke-width={isSelected ? 3 : isFocused ? 2 : 1}
+			stroke={isSelected ? 'var(--color-accent-hover)' : isFocused ? 'var(--color-accent)' : 'transparent'}
+			stroke-width={isSelected ? 3 : isFocused ? 2 : 0}
 			class="transition-colors duration-150"
 			class:opacity-80={isDragging}
 		/>
@@ -268,7 +264,7 @@
 			height={height + 4}
 			rx="6"
 			fill="none"
-			stroke="#3b82f6"
+			stroke="var(--color-accent)"
 			stroke-width="2"
 			stroke-dasharray="4 2"
 			class="animate-pulse"

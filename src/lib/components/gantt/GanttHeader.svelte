@@ -101,17 +101,17 @@
 
 <g class="gantt-header">
 	<!-- Background -->
-	<rect x="0" y="0" width="100%" {height} fill="#f9fafb" />
+	<rect x="0" y="0" width="100%" {height} fill="var(--color-surface-elevated)" />
 
 	<!-- Month labels (top row) -->
 	{#each monthLabels as { month, x, width }}
 		<g transform="translate({x}, 0)">
-			<rect x="0" y="0" {width} height={height / 2} fill="#f3f4f6" stroke="#e5e7eb" />
+			<rect x="0" y="0" {width} height={height / 2} fill="var(--color-surface-elevated)" stroke="var(--color-grid)" />
 			<text
 				x={width / 2}
 				y={height / 4 + 4}
 				text-anchor="middle"
-				class="text-xs font-medium fill-gray-600"
+				class="header-label-month"
 			>
 				{month}
 			</text>
@@ -126,15 +126,15 @@
 				y="0"
 				{width}
 				height={height / 2}
-				fill={isWeekend ? '#f3f4f6' : 'transparent'}
-				stroke="#e5e7eb"
+				fill={isWeekend ? 'var(--color-weekend)' : 'transparent'}
+				stroke="var(--color-grid)"
 			/>
 			<text
 				x={width / 2}
 				y={height / 4 + 4}
 				text-anchor="middle"
-				class="text-xs fill-gray-500"
-				class:fill-gray-400={isWeekend}
+				class="header-label-day"
+				class:weekend={isWeekend}
 			>
 				{label}
 			</text>
@@ -142,5 +142,23 @@
 	{/each}
 
 	<!-- Bottom border -->
-	<line x1="0" y1={height} x2="100%" y2={height} stroke="#d1d5db" />
+	<line x1="0" y1={height} x2="100%" y2={height} stroke="var(--color-grid-dark)" />
 </g>
+
+<style>
+	.header-label-month {
+		font-size: 0.75rem;
+		font-weight: 500;
+		fill: var(--color-text-secondary);
+	}
+
+	.header-label-day {
+		font-size: 0.75rem;
+		fill: var(--color-text-tertiary);
+	}
+
+	.header-label-day.weekend {
+		fill: var(--color-text-tertiary);
+		opacity: 0.7;
+	}
+</style>

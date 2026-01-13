@@ -47,7 +47,7 @@
 			y={headerHeight + i * rowHeight}
 			width={totalWidth}
 			height={rowHeight}
-			fill={i % 2 === 0 ? '#ffffff' : '#fafafa'}
+			fill={i % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-elevated)'}
 		/>
 	{/each}
 
@@ -59,7 +59,7 @@
 				y={headerHeight}
 				width={dayWidth}
 				height={gridHeight}
-				fill="#f9fafb"
+				fill="var(--color-weekend)"
 				opacity="0.7"
 			/>
 		{/if}
@@ -72,7 +72,7 @@
 			y1={headerHeight}
 			x2={x}
 			y2={headerHeight + gridHeight}
-			stroke="#e5e7eb"
+			stroke="var(--color-grid)"
 			stroke-width="1"
 		/>
 	{/each}
@@ -84,7 +84,7 @@
 			y1={headerHeight + i * rowHeight}
 			x2={totalWidth}
 			y2={headerHeight + i * rowHeight}
-			stroke="#e5e7eb"
+			stroke="var(--color-grid)"
 			stroke-width="1"
 		/>
 	{/each}
@@ -96,7 +96,7 @@
 			y1={headerHeight}
 			x2={todayOffset * dayWidth + dayWidth / 2}
 			y2={headerHeight + gridHeight}
-			stroke="#ef4444"
+			stroke="var(--color-today)"
 			stroke-width="2"
 			stroke-dasharray="4 4"
 		/>
@@ -104,7 +104,7 @@
 			cx={todayOffset * dayWidth + dayWidth / 2}
 			cy={headerHeight}
 			r="4"
-			fill="#ef4444"
+			fill="var(--color-today)"
 		/>
 	{/if}
 </g>

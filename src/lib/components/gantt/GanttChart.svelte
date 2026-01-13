@@ -86,7 +86,7 @@
 
 <div class="gantt-wrapper">
 <div
-	class="gantt-container relative overflow-auto bg-white rounded-lg border border-gray-200 shadow-sm flex"
+	class="gantt-container"
 	data-gantt-chart
 	onclick={handleClick}
 	role="application"
@@ -94,13 +94,13 @@
 >
 	<!-- Sidebar with section/task names (sticky to stay visible on horizontal scroll) -->
 	<div
-		class="gantt-sidebar sticky left-0 top-0 z-20 bg-white border-r border-gray-200 shrink-0"
+		class="gantt-sidebar"
 		style:width="{SIDEBAR_WIDTH}px"
 		style:height="{chartHeight}px"
 	>
 		<!-- Header spacer -->
 		<div
-			class="flex items-center px-4 font-semibold text-gray-700 border-b border-gray-200 bg-gray-50"
+			class="sidebar-header"
 			style:height="{HEADER_HEIGHT}px"
 		>
 			{gantt.data.config.title || 'Tasks'}
@@ -110,7 +110,7 @@
 		{#each gantt.tasksBySection as { section, tasks }}
 			<!-- Section header -->
 			<div
-				class="flex items-center px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 border-b border-gray-100"
+				class="section-header"
 				style:height="{ROW_HEIGHT}px"
 			>
 				{section.name}
@@ -121,9 +121,9 @@
 				{@const isFocused = gantt.view.focusedTaskId === task.id}
 				{@const isSelected = gantt.view.selectedTaskId === task.id}
 				<button
-					class="flex items-center w-full px-4 text-left text-sm truncate transition-colors
-						{isFocused ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'}
-						{isSelected ? 'ring-2 ring-inset ring-blue-500' : ''}"
+					class="task-row"
+					class:focused={isFocused}
+					class:selected={isSelected}
 					style:height="{ROW_HEIGHT}px"
 					data-task-name={task.id}
 					data-task-focused={isFocused || undefined}
@@ -140,7 +140,7 @@
 
 	<!-- Main chart area -->
 	<div
-		class="gantt-chart shrink-0"
+		class="gantt-chart"
 		style:width="{chartWidth}px"
 		style:height="{chartHeight}px"
 	>
@@ -258,12 +258,85 @@
 	}
 
 	.gantt-container {
+		position: relative;
+		display: flex;
+		overflow: auto;
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 0.75rem;
+		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 		min-height: 400px;
 		max-height: calc(100vh - 200px);
 	}
 
+	.gantt-sidebar {
+		position: sticky;
+		left: 0;
+		top: 0;
+		z-index: 20;
+		background-color: var(--color-surface);
+		border-right: 1px solid var(--color-border);
+		flex-shrink: 0;
+	}
+
+	.sidebar-header {
+		display: flex;
+		align-items: center;
+		padding-left: 1rem;
+		padding-right: 1rem;
+		font-weight: 600;
+		color: var(--color-text);
+		border-bottom: 1px solid var(--color-border);
+		background-color: var(--color-surface-elevated);
+	}
+
+	.section-header {
+		display: flex;
+		align-items: center;
+		padding: 0.25rem 1rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-text-tertiary);
+		background-color: var(--color-surface-elevated);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.task-row {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding-left: 1rem;
+		padding-right: 1rem;
+		text-align: left;
+		font-size: 0.875rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--color-text);
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		transition: background-color 0.15s ease, color 0.15s ease;
+	}
+
+	.task-row:hover {
+		background-color: var(--color-surface-elevated);
+	}
+
+	.task-row.focused {
+		background-color: var(--color-accent-subtle);
+		color: var(--color-accent);
+	}
+
+	.task-row.selected {
+		box-shadow: inset 0 0 0 2px var(--color-accent);
+	}
+
 	.gantt-chart {
 		position: relative;
+		flex-shrink: 0;
 	}
 
 	.extend-btn {
@@ -272,9 +345,9 @@
 		padding: 4px 8px;
 		font-size: 11px;
 		font-weight: 500;
-		color: #6b7280;
-		background: rgba(255, 255, 255, 0.9);
-		border: 1px solid #e5e7eb;
+		color: var(--color-text-secondary);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
 		border-radius: 4px;
 		cursor: pointer;
 		opacity: 0.5;
@@ -284,8 +357,8 @@
 
 	.extend-btn:hover {
 		opacity: 1;
-		background: #f3f4f6;
-		color: #374151;
+		background: var(--color-surface-elevated);
+		color: var(--color-text);
 	}
 
 	.extend-btn-right {
@@ -306,17 +379,17 @@
 		align-items: center;
 		justify-content: center;
 		padding: 6px;
-		color: #6b7280;
-		background: white;
-		border: 1px solid #e5e7eb;
+		color: var(--color-text-secondary);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
 		border-radius: 6px;
 		cursor: pointer;
 		transition: all 0.15s;
 	}
 
 	.zoom-btn:hover:not(:disabled) {
-		background: #f3f4f6;
-		color: #374151;
+		background: var(--color-surface-elevated);
+		color: var(--color-text);
 	}
 
 	.zoom-btn:disabled {
@@ -327,7 +400,7 @@
 	.zoom-levels {
 		display: flex;
 		gap: 2px;
-		background: #f3f4f6;
+		background: var(--color-surface-elevated);
 		padding: 2px;
 		border-radius: 6px;
 	}
@@ -336,7 +409,7 @@
 		padding: 4px 10px;
 		font-size: 12px;
 		font-weight: 500;
-		color: #6b7280;
+		color: var(--color-text-secondary);
 		background: transparent;
 		border: none;
 		border-radius: 4px;
@@ -345,12 +418,12 @@
 	}
 
 	.zoom-level:hover {
-		color: #374151;
+		color: var(--color-text);
 	}
 
 	.zoom-level.active {
-		background: white;
-		color: #111827;
+		background: var(--color-surface);
+		color: var(--color-text);
 		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 	}
 </style>

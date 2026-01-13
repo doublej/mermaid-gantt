@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
 	import { getKeyboardContext } from '$lib/stores/keyboard-store.svelte';
 	import { getOnboardingContext } from '$lib/stores/onboarding-store.svelte';
@@ -8,6 +9,19 @@
 	const keyboard = getKeyboardContext();
 	const onboarding = getOnboardingContext();
 	const persistence = getPersistenceContext();
+
+	// Listen for programmatic action dispatch (e.g., from CommandPalette)
+	onMount(() => {
+		const handleActionEvent = (e: Event) => {
+			const action = (e as CustomEvent).detail?.action;
+			if (action) {
+				executeAction(action);
+				onboarding.onAction(action);
+			}
+		};
+		document.addEventListener('gantt:action', handleActionEvent);
+		return () => document.removeEventListener('gantt:action', handleActionEvent);
+	});
 
 	function handleKeyDown(event: KeyboardEvent) {
 		// Skip if user is typing in an input
@@ -154,12 +168,16 @@
 			case 'openHistory':
 				persistence.openHistory();
 				return true;
+			case 'openFileBrowser':
+				persistence.openFileBrowser();
+				return true;
 			case 'createSnapshot':
 				persistence.createSnapshot();
 				return true;
 			case 'cancel':
 				keyboard.closeAllModals();
 				persistence.closeHistory();
+				persistence.closeFileBrowser();
 				gantt.view.editingTaskId = null;
 				gantt.view.selectedTaskId = null;
 				return true;

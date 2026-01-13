@@ -110,39 +110,32 @@
 
 {#if keyboard.showImportExport}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+		class="modal-backdrop flex items-center justify-center"
 		onclick={handleBackdropClick}
 		onkeydown={handleKeyDown}
 		role="dialog"
 		aria-modal="true"
 		aria-label={keyboard.importExportMode === 'import' ? 'Import' : 'Export'}
+		tabindex="-1"
 	>
-		<div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden">
+		<div class="io-modal">
 			<!-- Header with tabs -->
-			<div class="flex border-b border-gray-200">
+			<div class="io-tabs">
 				<button
 					onclick={() => (keyboard.importExportMode = 'import')}
-					class="flex-1 px-6 py-4 text-sm font-medium transition-colors
-						{keyboard.importExportMode === 'import'
-						? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-						: 'text-gray-500 hover:text-gray-700'}"
+					class="io-tab"
+					class:active={keyboard.importExportMode === 'import'}
 				>
 					Import
 				</button>
 				<button
 					onclick={() => (keyboard.importExportMode = 'export')}
-					class="flex-1 px-6 py-4 text-sm font-medium transition-colors
-						{keyboard.importExportMode === 'export'
-						? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-						: 'text-gray-500 hover:text-gray-700'}"
+					class="io-tab"
+					class:active={keyboard.importExportMode === 'export'}
 				>
 					Export
 				</button>
-				<button
-					onclick={close}
-					class="px-4 py-4 text-gray-400 hover:text-gray-600"
-					aria-label="Close"
-				>
+				<button onclick={close} class="btn-ghost ml-auto" aria-label="Close">
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 					</svg>
@@ -156,31 +149,29 @@
 					<div class="space-y-4">
 						<!-- Format selector -->
 						<div class="flex gap-4">
-							<label class="flex items-center gap-2">
+							<label class="radio-label">
 								<input
 									type="radio"
 									bind:group={importFormat}
 									value="mermaid"
-									class="text-blue-600 focus:ring-blue-500"
+									class="radio-input"
 								/>
-								<span class="text-sm text-gray-700">Mermaid</span>
+								<span>Mermaid</span>
 							</label>
-							<label class="flex items-center gap-2">
+							<label class="radio-label">
 								<input
 									type="radio"
 									bind:group={importFormat}
 									value="json"
-									class="text-blue-600 focus:ring-blue-500"
+									class="radio-input"
 								/>
-								<span class="text-sm text-gray-700">JSON</span>
+								<span>JSON</span>
 							</label>
 						</div>
 
 						<!-- File upload -->
 						<div class="flex items-center gap-4">
-							<label
-								class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
-							>
+							<label class="btn-secondary cursor-pointer">
 								<input
 									type="file"
 									accept=".mmd,.json,.txt"
@@ -189,7 +180,7 @@
 								/>
 								Upload file
 							</label>
-							<span class="text-sm text-gray-500">or paste below</span>
+							<span class="text-sm text-secondary">or paste below</span>
 						</div>
 
 						<!-- Text input -->
@@ -198,11 +189,11 @@
 							placeholder={importFormat === 'mermaid'
 								? 'gantt\n    title My Project\n    section Tasks\n    Task 1 :active, t1, 2024-01-01, 7d'
 								: '{"config": {...}, "sections": [...], "tasks": [...]}'}
-							class="w-full h-64 px-3 py-2 font-mono text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+							class="io-textarea"
 						></textarea>
 
 						{#if importError}
-							<div class="p-3 text-sm text-red-700 bg-red-50 rounded-lg">
+							<div class="error-box">
 								{importError}
 							</div>
 						{/if}
@@ -212,61 +203,50 @@
 					<div class="space-y-4">
 						<!-- Format selector -->
 						<div class="flex gap-4">
-							<label class="flex items-center gap-2">
+							<label class="radio-label">
 								<input
 									type="radio"
 									bind:group={exportFormat}
 									value="mermaid"
-									class="text-blue-600 focus:ring-blue-500"
+									class="radio-input"
 								/>
-								<span class="text-sm text-gray-700">Mermaid</span>
+								<span>Mermaid</span>
 							</label>
-							<label class="flex items-center gap-2">
+							<label class="radio-label">
 								<input
 									type="radio"
 									bind:group={exportFormat}
 									value="json"
-									class="text-blue-600 focus:ring-blue-500"
+									class="radio-input"
 								/>
-								<span class="text-sm text-gray-700">JSON</span>
+								<span>JSON</span>
 							</label>
 						</div>
 
 						<!-- Preview -->
-						<pre
-							class="w-full h-64 px-3 py-2 font-mono text-sm bg-gray-50 border border-gray-200 rounded-lg overflow-auto"
-						>{exportText}</pre>
+						<pre class="io-preview">{exportText}</pre>
 					</div>
 				{/if}
 			</div>
 
 			<!-- Footer -->
-			<div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-200 bg-gray-50">
+			<div class="io-footer">
 				{#if keyboard.importExportMode === 'import'}
-					<button
-						onclick={close}
-						class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-					>
+					<button onclick={close} class="btn-secondary">
 						Cancel
 					</button>
 					<button
 						onclick={handleImport}
 						disabled={!importText.trim()}
-						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="btn-primary"
 					>
 						Import
 					</button>
 				{:else}
-					<button
-						onclick={handleCopy}
-						class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-					>
+					<button onclick={handleCopy} class="btn-secondary">
 						{copied ? 'Copied!' : 'Copy to clipboard'}
 					</button>
-					<button
-						onclick={handleDownload}
-						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-					>
+					<button onclick={handleDownload} class="btn-primary">
 						Download
 					</button>
 				{/if}
@@ -274,3 +254,109 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	.io-modal {
+		width: 100%;
+		max-width: 42rem;
+		background-color: var(--color-surface);
+		border-radius: 0.75rem;
+		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+		border: 1px solid var(--color-border);
+		overflow: hidden;
+	}
+
+	.io-tabs {
+		display: flex;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.io-tab {
+		flex: 1;
+		padding: 1rem 1.5rem;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--color-text-secondary);
+		transition: all 0.15s ease;
+	}
+
+	.io-tab:hover {
+		color: var(--color-text);
+	}
+
+	.io-tab.active {
+		color: var(--color-accent);
+		border-bottom: 2px solid var(--color-accent);
+		background-color: var(--color-accent-subtle);
+	}
+
+	.radio-label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+		color: var(--color-text);
+		cursor: pointer;
+	}
+
+	.radio-input {
+		accent-color: var(--color-accent);
+	}
+
+	.io-textarea {
+		width: 100%;
+		height: 16rem;
+		padding: 0.75rem;
+		font-family: var(--font-family-mono);
+		font-size: 0.875rem;
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 0.5rem;
+		color: var(--color-text);
+		resize: none;
+	}
+
+	.io-textarea:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px var(--color-accent-light);
+	}
+
+	.io-textarea::placeholder {
+		color: var(--color-text-tertiary);
+	}
+
+	.io-preview {
+		width: 100%;
+		height: 16rem;
+		padding: 0.75rem;
+		font-family: var(--font-family-mono);
+		font-size: 0.875rem;
+		background-color: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: 0.5rem;
+		color: var(--color-text);
+		overflow: auto;
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	.error-box {
+		padding: 0.75rem;
+		font-size: 0.875rem;
+		color: var(--color-status-critical);
+		background-color: color-mix(in srgb, var(--color-status-critical) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-status-critical) 30%, transparent);
+		border-radius: 0.5rem;
+	}
+
+	.io-footer {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.5rem;
+		padding: 1rem 1.5rem;
+		border-top: 1px solid var(--color-border);
+		background-color: var(--color-surface-elevated);
+	}
+</style>

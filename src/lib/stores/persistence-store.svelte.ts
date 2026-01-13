@@ -28,8 +28,8 @@ function serializeData(data: GanttData): SerializedGanttData {
 		sections: data.sections,
 		tasks: data.tasks.map((t) => ({
 			...t,
-			startDate: t.startDate.toISOString(),
-			endDate: t.endDate.toISOString()
+			startDate: t.startDate instanceof Date ? t.startDate.toISOString() : t.startDate,
+			endDate: t.endDate instanceof Date ? t.endDate.toISOString() : t.endDate
 		}))
 	};
 }
@@ -52,6 +52,7 @@ export class PersistenceStore {
 	currentProjectId = $state<string | null>(null);
 	saveStatus = $state<SaveStatus>('saved');
 	isHistoryOpen = $state(false);
+	isFileBrowserOpen = $state(false);
 
 	// Derived
 	currentProject = $derived(this.projects.find((p) => p.id === this.currentProjectId) ?? null);
@@ -403,47 +404,37 @@ export class PersistenceStore {
 		return JSON.stringify(data);
 	}
 
-	private addAutoSnapshot(data: ProjectData): void {
-		const version: ProjectVersion = {
-			id: generateId(),
-			name: null,
-			timestamp: Date.now(),
-			data: { ...data.current }
-		};
-
-		data.versions.push(version);
-
-		// Prune old auto-snapshots
-		const autoVersions = data.versions.filter((v) => v.name === null);
-		if (autoVersions.length > MAX_AUTO_VERSIONS) {
-			const oldest = autoVersions.sort((a, b) => a.timestamp - b.timestamp)[0];
+	private pruneVersions(data: ProjectData, isManual: boolean): void {
+		const maxCount = isManual ? MAX_MANUAL_VERSIONS : MAX_AUTO_VERSIONS;
+		const versions = data.versions.filter((v) => isManual ? v.name !== null : v.name === null);
+		if (versions.length >= maxCount) {
+			const oldest = versions.sort((a, b) => a.timestamp - b.timestamp)[0];
 			data.versions = data.versions.filter((v) => v.id !== oldest.id);
 		}
 	}
 
-	// Manual snapshots
+	private addAutoSnapshot(data: ProjectData): void {
+		this.pruneVersions(data, false);
+		data.versions.push({
+			id: generateId(),
+			name: null,
+			timestamp: Date.now(),
+			data: { ...data.current }
+		});
+	}
+
 	createSnapshot(name?: string): void {
 		if (!this.currentProjectId || !this.ganttStore) return;
-
 		const data = this.loadProjectData(this.currentProjectId);
 		if (!data) return;
 
-		// Check manual version limit
-		const manualVersions = data.versions.filter((v) => v.name !== null);
-		if (manualVersions.length >= MAX_MANUAL_VERSIONS) {
-			// Remove oldest manual version
-			const oldest = manualVersions.sort((a, b) => a.timestamp - b.timestamp)[0];
-			data.versions = data.versions.filter((v) => v.id !== oldest.id);
-		}
-
-		const version: ProjectVersion = {
+		this.pruneVersions(data, true);
+		data.versions.push({
 			id: generateId(),
 			name: name || `Snapshot ${new Date().toLocaleString()}`,
 			timestamp: Date.now(),
 			data: serializeData(this.ganttStore.exportData())
-		};
-
-		data.versions.push(version);
+		});
 		localStorage.setItem(`${STORAGE_PREFIX}project:${this.currentProjectId}`, JSON.stringify(data));
 	}
 
@@ -486,6 +477,15 @@ export class PersistenceStore {
 
 	closeHistory(): void {
 		this.isHistoryOpen = false;
+	}
+
+	// File browser modal
+	openFileBrowser(): void {
+		this.isFileBrowserOpen = true;
+	}
+
+	closeFileBrowser(): void {
+		this.isFileBrowserOpen = false;
 	}
 
 	// Beforeunload handler

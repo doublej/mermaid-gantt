@@ -2,3 +2,7 @@ node_modules/
 .svelte-kit/
 build/
 .env
+.env.*
+.mcp.json
+.DS_Store
+*.local

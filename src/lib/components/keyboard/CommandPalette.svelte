@@ -82,56 +82,10 @@
 	});
 
 	function executeAction(action: string) {
-		// Dispatch to keyboard handler
-		const event = new KeyboardEvent('keydown', {
-			key: action,
-			bubbles: true
-		});
-
-		// Close palette first
 		close();
-
-		// Execute via a custom approach
-		const actionMap: Record<string, () => void> = {
-			focusPrev: () => gantt.focusPreviousTask(),
-			focusNext: () => gantt.focusNextTask(),
-			focusFirst: () => gantt.focusFirstTask(),
-			focusLast: () => gantt.focusLastTask(),
-			newTask: () => gantt.addTask(),
-			editTask: () => {
-				if (gantt.view.focusedTaskId) {
-					gantt.view.selectedTaskId = gantt.view.focusedTaskId;
-					gantt.view.editingTaskId = gantt.view.focusedTaskId;
-				}
-			},
-			deleteTask: () => {
-				if (gantt.view.focusedTaskId) {
-					gantt.deleteTask(gantt.view.focusedTaskId);
-				}
-			},
-			copyTask: () => {
-				if (gantt.view.focusedTaskId) {
-					gantt.copyTask(gantt.view.focusedTaskId);
-				}
-			},
-			pasteTask: () => gantt.pasteTask(),
-			duplicateTask: () => {
-				if (gantt.view.focusedTaskId) {
-					gantt.duplicateTask(gantt.view.focusedTaskId);
-				}
-			},
-			zoomIn: () => gantt.zoomIn(),
-			zoomOut: () => gantt.zoomOut(),
-			resetZoom: () => gantt.resetZoom(),
-			openHelp: () => keyboard.openHelp(),
-			openExport: () => keyboard.openExport(),
-			openImport: () => keyboard.openImport(),
-			undo: () => gantt.undo(),
-			redo: () => gantt.redo()
-		};
-
-		const handler = actionMap[action];
-		if (handler) handler();
+		// Dispatch action via synthetic keyboard event to centralized handler
+		const event = new CustomEvent('gantt:action', { detail: { action }, bubbles: true });
+		document.dispatchEvent(event);
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -173,19 +127,19 @@
 
 {#if keyboard.showCommandPalette}
 	<div
-		class="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/50"
+		class="modal-backdrop flex items-start justify-center pt-[15vh]"
 		onclick={handleBackdropClick}
 		role="dialog"
 		aria-modal="true"
 		aria-label="Command palette"
 	>
 		<div
-			class="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden"
+			class="w-full max-w-lg bg-surface rounded-xl shadow-2xl overflow-hidden border border-default"
 			onkeydown={handleKeyDown}
 		>
 			<!-- Search input -->
-			<div class="flex items-center px-4 border-b border-gray-200">
-				<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<div class="flex items-center px-4 border-b border-default">
+				<svg class="w-5 h-5 text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -198,7 +152,7 @@
 					bind:value={searchQuery}
 					type="text"
 					placeholder="Type a command or search..."
-					class="flex-1 px-3 py-4 text-base outline-none"
+					class="flex-1 px-3 py-4 text-base outline-none bg-transparent text-primary"
 				/>
 				<kbd class="kbd kbd-sm">Esc</kbd>
 			</div>
@@ -207,16 +161,14 @@
 			<div class="max-h-80 overflow-y-auto">
 				{#each Object.entries(groupedCommands) as [category, cmds]}
 					<div class="px-2 pt-2">
-						<div class="px-2 py-1 text-xs font-medium text-gray-500 uppercase tracking-wide">
+						<div class="px-2 py-1 text-xs font-medium text-tertiary uppercase tracking-wide">
 							{category}
 						</div>
 						{#each cmds as cmd, i}
 							{@const globalIndex = filteredCommands.indexOf(cmd)}
 							<button
-								class="flex items-center justify-between w-full px-3 py-2 text-left rounded-lg transition-colors
-									{globalIndex === selectedIndex
-									? 'bg-blue-50 text-blue-900'
-									: 'text-gray-700 hover:bg-gray-50'}"
+								class="command-item"
+								class:selected={globalIndex === selectedIndex}
 								onclick={() => cmd.action()}
 								onmouseenter={() => (selectedIndex = globalIndex)}
 							>
@@ -234,7 +186,7 @@
 				{/each}
 
 				{#if filteredCommands.length === 0}
-					<div class="px-4 py-8 text-center text-gray-500">
+					<div class="px-4 py-8 text-center text-tertiary">
 						No commands found for "{searchQuery}"
 					</div>
 				{/if}
@@ -242,3 +194,26 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	.command-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		padding: 0.5rem 0.75rem;
+		text-align: left;
+		border-radius: 0.5rem;
+		color: var(--color-text);
+		transition: background-color 0.15s ease;
+	}
+
+	.command-item:hover {
+		background-color: var(--color-surface-elevated);
+	}
+
+	.command-item.selected {
+		background-color: var(--color-accent-subtle);
+		color: var(--color-accent);
+	}
+</style>
