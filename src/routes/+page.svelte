@@ -236,6 +236,195 @@
 		</div>
 	</section>
 
+	<!-- Comparison -->
+	<section class="comparison-section">
+		<div class="comparison-inner">
+			<div class="comparison-header">
+				<span class="comparison-label">The Honest Truth</span>
+				<h2 class="comparison-title">Mermaid vs Paid Gantt Tools</h2>
+				<p class="comparison-desc">A practical comparison for teams evaluating their options.</p>
+			</div>
+
+			<!-- Quick Comparison Table -->
+			<div class="comparison-table-wrapper">
+				<div class="comparison-table">
+					<div class="table-header">
+						<div class="table-cell metric-header"></div>
+						<div class="table-cell tool-header highlight">
+							<span class="tool-badge">Free</span>
+							Mermaid
+						</div>
+						<div class="table-cell tool-header">MS Project</div>
+						<div class="table-cell tool-header">GanttPRO</div>
+						<div class="table-cell tool-header">TeamGantt</div>
+					</div>
+					<div class="table-row">
+						<div class="table-cell metric-cell">Time to First Chart</div>
+						<div class="table-cell value-cell highlight">~5 min</div>
+						<div class="table-cell value-cell muted">1-4 hours</div>
+						<div class="table-cell value-cell muted">~20 min</div>
+						<div class="table-cell value-cell muted">~15 min</div>
+					</div>
+					<div class="table-row">
+						<div class="table-cell metric-cell">Cost</div>
+						<div class="table-cell value-cell highlight">
+							<span class="value-accent">$0</span>
+						</div>
+						<div class="table-cell value-cell muted">$30+/user/mo</div>
+						<div class="table-cell value-cell muted">$8+/user/mo</div>
+						<div class="table-cell value-cell muted">$49+/mo</div>
+					</div>
+					<div class="table-row">
+						<div class="table-cell metric-cell">Signup Required</div>
+						<div class="table-cell value-cell highlight">
+							<span class="check-icon">✓</span> No
+						</div>
+						<div class="table-cell value-cell muted">Yes</div>
+						<div class="table-cell value-cell muted">Yes</div>
+						<div class="table-cell value-cell muted">Yes</div>
+					</div>
+					<div class="table-row">
+						<div class="table-cell metric-cell">Embeds in Docs</div>
+						<div class="table-cell value-cell highlight">
+							<span class="check-icon">✓</span>
+						</div>
+						<div class="table-cell value-cell muted">
+							<span class="x-icon">✗</span>
+						</div>
+						<div class="table-cell value-cell muted">
+							<span class="x-icon">✗</span>
+						</div>
+						<div class="table-cell value-cell muted">
+							<span class="x-icon">✗</span>
+						</div>
+					</div>
+					<div class="table-row">
+						<div class="table-cell metric-cell">Version Control</div>
+						<div class="table-cell value-cell highlight">
+							<span class="check-icon">✓</span>
+						</div>
+						<div class="table-cell value-cell muted">
+							<span class="x-icon">✗</span>
+						</div>
+						<div class="table-cell value-cell muted">
+							<span class="x-icon">✗</span>
+						</div>
+						<div class="table-cell value-cell muted">
+							<span class="x-icon">✗</span>
+						</div>
+					</div>
+					<div class="table-row">
+						<div class="table-cell metric-cell">Vendor Lock-in</div>
+						<div class="table-cell value-cell highlight">
+							<span class="value-accent">None</span>
+						</div>
+						<div class="table-cell value-cell muted">High</div>
+						<div class="table-cell value-cell muted">Medium</div>
+						<div class="table-cell value-cell muted">Medium</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Why Teams Choose Mermaid -->
+			<div class="benefits-section">
+				<h3 class="benefits-title">Why Teams Choose Mermaid</h3>
+				<div class="benefits-grid">
+					<div class="benefit-card">
+						<div class="benefit-number">01</div>
+						<h4 class="benefit-heading">No Setup</h4>
+						<p class="benefit-text">No account, no installation. Use mermaid.live, VS Code, or any Markdown editor.</p>
+					</div>
+					<div class="benefit-card">
+						<div class="benefit-number">02</div>
+						<h4 class="benefit-heading">Lives With Your Code</h4>
+						<p class="benefit-text">Embed in GitHub READMEs, Notion, Confluence, or wikis. The chart stays with the project.</p>
+					</div>
+					<div class="benefit-card">
+						<div class="benefit-number">03</div>
+						<h4 class="benefit-heading">Version Controlled</h4>
+						<p class="benefit-text">Diff your timelines. Review changes in PRs. Roll back if needed.</p>
+					</div>
+					<div class="benefit-card">
+						<div class="benefit-number">04</div>
+						<h4 class="benefit-heading">Free & Open Source</h4>
+						<p class="benefit-text">No trials, no seat limits, no feature gates.</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Cost Comparison Visual -->
+			<div class="cost-section">
+				<h3 class="cost-title">Annual Cost <span class="cost-subtitle">(10-person team)</span></h3>
+				<div class="cost-bars">
+					<div class="cost-row">
+						<span class="cost-label">Mermaid</span>
+						<div class="cost-bar-track">
+							<div class="cost-bar mermaid" style="--bar-width: 0%;">
+								<span class="cost-amount">$0</span>
+							</div>
+						</div>
+					</div>
+					<div class="cost-row">
+						<span class="cost-label">GanttPRO</span>
+						<div class="cost-bar-track">
+							<div class="cost-bar ganttpro" style="--bar-width: 36%;">
+								<span class="cost-amount">$960–$2,400</span>
+							</div>
+						</div>
+					</div>
+					<div class="cost-row">
+						<span class="cost-label">TeamGantt</span>
+						<div class="cost-bar-track">
+							<div class="cost-bar teamgantt" style="--bar-width: 18%;">
+								<span class="cost-amount">$588–$1,188</span>
+							</div>
+						</div>
+					</div>
+					<div class="cost-row">
+						<span class="cost-label">MS Project</span>
+						<div class="cost-bar-track">
+							<div class="cost-bar msproject" style="--bar-width: 100%;">
+								<span class="cost-amount">$3,600–$6,600</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- When Paid Tools Make Sense -->
+			<div class="tradeoffs-section">
+				<h3 class="tradeoffs-title">When Paid Tools Fit Better</h3>
+				<div class="tradeoffs-grid">
+					<div class="tradeoff-item">
+						<span class="tradeoff-need">Resource workload balancing</span>
+						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-tool">GanttPRO or MS Project</span>
+					</div>
+					<div class="tradeoff-item">
+						<span class="tradeoff-need">Real-time collaborative editing</span>
+						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-tool">Any paid tool</span>
+					</div>
+					<div class="tradeoff-item">
+						<span class="tradeoff-need">Enterprise SSO/compliance</span>
+						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-tool">MS Project</span>
+					</div>
+					<div class="tradeoff-item">
+						<span class="tradeoff-need">Critical path analysis</span>
+						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-tool">GanttPRO or MS Project</span>
+					</div>
+					<div class="tradeoff-item">
+						<span class="tradeoff-need">Non-technical stakeholders</span>
+						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-tool">TeamGantt or GanttPRO</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
 	<!-- CTA -->
 	<section class="cta-section">
 		<div class="section-inner cta-inner">
@@ -744,5 +933,420 @@
 
 	.footer-text a:hover {
 		color: var(--color-accent);
+	}
+
+	/* Comparison Section */
+	.comparison-section {
+		padding: 6rem 0;
+		background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-surface-elevated) 100%);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.comparison-section::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--color-border-emphasis), transparent);
+	}
+
+	.comparison-inner {
+		max-width: 72rem;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	.comparison-header {
+		text-align: center;
+		margin-bottom: 4rem;
+	}
+
+	.comparison-label {
+		display: inline-block;
+		font-family: var(--font-family-mono);
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--color-accent);
+		padding: 0.375rem 0.875rem;
+		background: var(--color-accent-subtle);
+		border-radius: 9999px;
+		margin-bottom: 1.25rem;
+	}
+
+	.comparison-title {
+		font-family: var(--font-family-display);
+		font-size: clamp(1.75rem, 4vw, 2.5rem);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin-bottom: 0.75rem;
+	}
+
+	.comparison-desc {
+		font-family: var(--font-family-body);
+		font-size: 1.0625rem;
+		color: var(--color-text-secondary);
+	}
+
+	/* Comparison Table */
+	.comparison-table-wrapper {
+		overflow-x: auto;
+		margin-bottom: 4rem;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.comparison-table {
+		min-width: 640px;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-modal);
+		overflow: hidden;
+	}
+
+	.table-header {
+		display: grid;
+		grid-template-columns: 1.5fr repeat(4, 1fr);
+		background: var(--color-surface-elevated);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.table-row {
+		display: grid;
+		grid-template-columns: 1.5fr repeat(4, 1fr);
+		border-bottom: 1px solid var(--color-border);
+		transition: background 0.15s;
+	}
+
+	.table-row:last-child {
+		border-bottom: none;
+	}
+
+	.table-row:hover {
+		background: var(--color-surface-elevated);
+	}
+
+	.table-cell {
+		padding: 1rem 1.25rem;
+		font-family: var(--font-family-body);
+		font-size: 0.875rem;
+	}
+
+	.metric-header {
+		font-family: var(--font-family-mono);
+		font-size: 0.6875rem;
+		color: var(--color-text-tertiary);
+	}
+
+	.tool-header {
+		font-family: var(--font-family-display);
+		font-weight: 600;
+		font-size: 0.8125rem;
+		text-align: center;
+		color: var(--color-text-secondary);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	.tool-header.highlight {
+		color: var(--color-text);
+		background: var(--color-accent-subtle);
+	}
+
+	.tool-badge {
+		font-family: var(--font-family-mono);
+		font-size: 0.5625rem;
+		font-weight: 500;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--color-status-done);
+		padding: 0.125rem 0.5rem;
+		background: color-mix(in srgb, var(--color-status-done) 15%, transparent);
+		border-radius: 9999px;
+	}
+
+	.metric-cell {
+		font-family: var(--font-family-body);
+		font-weight: 500;
+		color: var(--color-text);
+	}
+
+	.value-cell {
+		text-align: center;
+		color: var(--color-text);
+	}
+
+	.value-cell.highlight {
+		background: var(--color-accent-subtle);
+		font-weight: 600;
+	}
+
+	.value-cell.muted {
+		color: var(--color-text-secondary);
+	}
+
+	.value-accent {
+		color: var(--color-status-done);
+		font-weight: 700;
+	}
+
+	.check-icon {
+		color: var(--color-status-done);
+		font-weight: 700;
+	}
+
+	.x-icon {
+		color: var(--color-text-tertiary);
+		opacity: 0.6;
+	}
+
+	/* Benefits Section */
+	.benefits-section {
+		margin-bottom: 4rem;
+	}
+
+	.benefits-title {
+		font-family: var(--font-family-display);
+		font-size: 1.25rem;
+		font-weight: 600;
+		letter-spacing: var(--letter-spacing-display);
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+
+	.benefits-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: 1.25rem;
+	}
+
+	.benefit-card {
+		position: relative;
+		padding: 1.5rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-modal);
+		transition: border-color 0.2s, transform 0.2s;
+	}
+
+	.benefit-card:hover {
+		border-color: var(--color-accent);
+		transform: translateY(-3px);
+	}
+
+	.benefit-number {
+		font-family: var(--font-family-mono);
+		font-size: 0.625rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		color: var(--color-accent);
+		margin-bottom: 0.75rem;
+	}
+
+	.benefit-heading {
+		font-family: var(--font-family-display);
+		font-size: 0.9375rem;
+		font-weight: 600;
+		letter-spacing: var(--letter-spacing-display);
+		margin-bottom: 0.5rem;
+	}
+
+	.benefit-text {
+		font-family: var(--font-family-body);
+		font-size: 0.8125rem;
+		line-height: 1.6;
+		color: var(--color-text-secondary);
+	}
+
+	/* Cost Section */
+	.cost-section {
+		margin-bottom: 4rem;
+		padding: 2rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-modal);
+	}
+
+	.cost-title {
+		font-family: var(--font-family-display);
+		font-size: 1.125rem;
+		font-weight: 600;
+		letter-spacing: var(--letter-spacing-display);
+		margin-bottom: 1.5rem;
+	}
+
+	.cost-subtitle {
+		font-family: var(--font-family-body);
+		font-size: 0.875rem;
+		font-weight: 400;
+		color: var(--color-text-secondary);
+	}
+
+	.cost-bars {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.cost-row {
+		display: grid;
+		grid-template-columns: 6rem 1fr;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	@media (max-width: 600px) {
+		.cost-row {
+			grid-template-columns: 5rem 1fr;
+		}
+	}
+
+	.cost-label {
+		font-family: var(--font-family-mono);
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-text-secondary);
+		text-align: right;
+	}
+
+	.cost-bar-track {
+		height: 2.25rem;
+		background: var(--color-surface-elevated);
+		border-radius: var(--radius-card);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.cost-bar {
+		height: 100%;
+		width: var(--bar-width);
+		min-width: 5rem;
+		border-radius: var(--radius-card);
+		display: flex;
+		align-items: center;
+		padding: 0 0.875rem;
+		transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+		animation: barGrow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		animation-delay: 0.2s;
+		transform-origin: left;
+	}
+
+	@keyframes barGrow {
+		from {
+			transform: scaleX(0);
+			opacity: 0;
+		}
+		to {
+			transform: scaleX(1);
+			opacity: 1;
+		}
+	}
+
+	.cost-bar.mermaid {
+		background: linear-gradient(90deg, var(--color-status-done), color-mix(in srgb, var(--color-status-done) 80%, var(--color-accent)));
+		min-width: 4rem;
+	}
+
+	.cost-bar.ganttpro {
+		background: linear-gradient(90deg, #6366F1, #818CF8);
+		animation-delay: 0.35s;
+	}
+
+	.cost-bar.teamgantt {
+		background: linear-gradient(90deg, #EC4899, #F472B6);
+		animation-delay: 0.5s;
+	}
+
+	.cost-bar.msproject {
+		background: linear-gradient(90deg, var(--color-status-critical), #F87171);
+		animation-delay: 0.65s;
+	}
+
+	.cost-amount {
+		font-family: var(--font-family-mono);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		color: white;
+		white-space: nowrap;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+	}
+
+	/* Tradeoffs Section */
+	.tradeoffs-section {
+		padding: 2rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-modal);
+	}
+
+	.tradeoffs-title {
+		font-family: var(--font-family-display);
+		font-size: 1.125rem;
+		font-weight: 600;
+		letter-spacing: var(--letter-spacing-display);
+		margin-bottom: 1.5rem;
+	}
+
+	.tradeoffs-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.tradeoff-item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem 1rem;
+		background: var(--color-surface-elevated);
+		border-radius: var(--radius-card);
+		font-size: 0.8125rem;
+		transition: background 0.15s;
+	}
+
+	.tradeoff-item:hover {
+		background: var(--color-border);
+	}
+
+	.tradeoff-need {
+		flex: 1;
+		font-family: var(--font-family-body);
+		color: var(--color-text);
+	}
+
+	.tradeoff-arrow {
+		font-family: var(--font-family-mono);
+		color: var(--color-text-tertiary);
+		flex-shrink: 0;
+	}
+
+	.tradeoff-tool {
+		font-family: var(--font-family-mono);
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-text-secondary);
+		white-space: nowrap;
+	}
+
+	@media (max-width: 600px) {
+		.tradeoff-item {
+			flex-wrap: wrap;
+		}
+
+		.tradeoff-arrow {
+			display: none;
+		}
+
+		.tradeoff-tool {
+			width: 100%;
+			padding-top: 0.5rem;
+			border-top: 1px solid var(--color-border);
+			margin-top: 0.25rem;
+		}
 	}
 </style>

@@ -164,6 +164,7 @@ export type SaveStatus = 'saved' | 'saving' | 'unsaved';
 export interface MenuItem {
 	label?: string;
 	icon?: string;
+	iconColor?: string; // hex color for icon
 	action?: () => void;
 	disabled?: boolean;
 	divider?: boolean;

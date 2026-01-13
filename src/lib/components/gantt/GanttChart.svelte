@@ -6,6 +6,8 @@
 	import GanttGrid from './GanttGrid.svelte';
 	import GanttTask from './GanttTask.svelte';
 	import GanttDependency from './GanttDependency.svelte';
+	import ContextMenu from '../ui/ContextMenu.svelte';
+	import type { MenuItem } from '$lib/types';
 
 	const gantt = getGanttContext();
 
@@ -14,6 +16,23 @@
 
 	// Track collapsed parent tasks
 	let collapsedTasks = $state(new Set<string>());
+
+	// Context menu state (lifted from GanttTask since it renders inside SVG)
+	let contextMenuOpen = $state(false);
+	let contextMenuX = $state(0);
+	let contextMenuY = $state(0);
+	let contextMenuItems = $state<MenuItem[]>([]);
+
+	function handleTaskContextMenu(taskId: string, x: number, y: number, items: MenuItem[]) {
+		contextMenuX = x;
+		contextMenuY = y;
+		contextMenuItems = items;
+		contextMenuOpen = true;
+	}
+
+	function closeContextMenu() {
+		contextMenuOpen = false;
+	}
 
 	// Layout constants
 	const ROW_HEIGHT = 40;
@@ -315,6 +334,7 @@
 					isFocused={gantt.view.focusedTaskId === pos.task.id}
 					isSelected={gantt.view.selectedTaskId === pos.task.id}
 					isInMultiSelect={gantt.view.selectedTaskIds.length > 1 && gantt.view.selectedTaskIds.includes(pos.task.id)}
+					onContextMenu={handleTaskContextMenu}
 				/>
 			{/each}
 		</svg>
@@ -338,6 +358,16 @@
 		+1mo
 	</button>
 </div>
+
+<!-- Context menu (rendered outside SVG) -->
+{#if contextMenuOpen}
+	<ContextMenu
+		items={contextMenuItems}
+		x={contextMenuX}
+		y={contextMenuY}
+		onClose={closeContextMenu}
+	/>
+{/if}
 
 <!-- Zoom controls (outside scrollable area) -->
 <div class="zoom-controls">

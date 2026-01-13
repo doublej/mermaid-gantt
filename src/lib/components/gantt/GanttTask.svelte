@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Task, MenuItem } from '$lib/types';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
-	import ContextMenu from '../ui/ContextMenu.svelte';
 
 	interface Props {
 		task: Task;
@@ -13,16 +12,12 @@
 		isFocused: boolean;
 		isSelected: boolean;
 		isInMultiSelect?: boolean;
+		onContextMenu?: (taskId: string, x: number, y: number, items: MenuItem[]) => void;
 	}
 
-	let { task, x, y, width, height, dayWidth, isFocused, isSelected, isInMultiSelect = false }: Props = $props();
+	let { task, x, y, width, height, dayWidth, isFocused, isSelected, isInMultiSelect = false, onContextMenu }: Props = $props();
 
 	const gantt = getGanttContext();
-
-	// Context menu state
-	let contextMenuOpen = $state(false);
-	let contextMenuX = $state(0);
-	let contextMenuY = $state(0);
 
 	// Status-based colors using CSS variables, with custom color override
 	const colors = $derived.by(() => {
@@ -142,50 +137,49 @@
 	function handleContextMenu(event: MouseEvent) {
 		event.preventDefault();
 		event.stopPropagation();
-		contextMenuX = event.clientX;
-		contextMenuY = event.clientY;
-		contextMenuOpen = true;
 		gantt.view.focusedTaskId = task.id;
 		gantt.view.selectedTaskId = task.id;
-	}
 
-	const contextMenuItems = $derived.by((): MenuItem[] => {
-		const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
-		return [
-			{
-				label: 'Edit',
-				icon: '✎',
-				action: () => (gantt.view.editingTaskId = task.id)
-			},
-			{
-				label: 'Duplicate',
-				icon: '⋰',
-				action: () => gantt.duplicateTask(task.id)
-			},
-			{ divider: true },
-			{
-				label: 'Set Color',
-				icon: '●',
-				submenu: [
-					{
-						label: 'None',
-						action: () => gantt.updateTask(task.id, { color: null })
-					},
-					...colors.map((color) => ({
-						label: '',
-						icon: `●`,
-						action: () => gantt.updateTask(task.id, { color })
-					}))
-				]
-			},
-			{ divider: true },
-			{
-				label: 'Delete',
-				icon: '🗑',
-				action: () => gantt.deleteTask(task.id)
-			}
-		];
-	});
+		if (onContextMenu) {
+			const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+			const items: MenuItem[] = [
+				{
+					label: 'Edit',
+					icon: '✎',
+					action: () => (gantt.view.editingTaskId = task.id)
+				},
+				{
+					label: 'Duplicate',
+					icon: '⋰',
+					action: () => gantt.duplicateTask(task.id)
+				},
+				{ divider: true },
+				{
+					label: 'Set Color',
+					icon: '●',
+					submenu: [
+						{
+							label: 'None',
+							action: () => gantt.updateTask(task.id, { color: null })
+						},
+						...colors.map((color) => ({
+							label: '',
+							icon: '●',
+							iconColor: color,
+							action: () => gantt.updateTask(task.id, { color })
+						}))
+					]
+				},
+				{ divider: true },
+				{
+					label: 'Delete',
+					icon: '🗑',
+					action: () => gantt.deleteTask(task.id)
+				}
+			];
+			onContextMenu(task.id, event.clientX, event.clientY, items);
+		}
+	}
 </script>
 
 <g
@@ -350,12 +344,3 @@
 	</pattern>
 </defs>
 
-<!-- Context menu -->
-{#if contextMenuOpen}
-	<ContextMenu
-		items={contextMenuItems}
-		x={contextMenuX}
-		y={contextMenuY}
-		onClose={() => (contextMenuOpen = false)}
-	/>
-{/if}

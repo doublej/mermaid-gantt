@@ -139,7 +139,7 @@
 				disabled={item.disabled}
 			>
 				{#if item.icon}
-					<span class="menu-icon">{item.icon}</span>
+					<span class="menu-icon" style:color={item.iconColor}>{item.icon}</span>
 				{/if}
 				<span class="menu-label">{item.label}</span>
 				{#if item.submenu}
@@ -160,7 +160,7 @@
 								disabled={subitem.disabled}
 							>
 								{#if subitem.icon}
-									<span class="menu-icon">{subitem.icon}</span>
+									<span class="menu-icon" style:color={subitem.iconColor}>{subitem.icon}</span>
 								{/if}
 								<span class="menu-label">{subitem.label}</span>
 							</button>
