@@ -9,6 +9,18 @@ export interface Task {
 	endDate: Date;
 	status: TaskStatus;
 	dependencies: string[]; // task IDs this depends on
+	// Hierarchy
+	parentId: string | null;
+	// Visual
+	isMilestone: boolean;
+	color: string | null; // hex color or preset name
+	// Tracking
+	tags: string[]; // tag IDs
+	estimatedHours: number | null;
+	actualHours: number | null;
+	estimatedCost: number | null;
+	actualCost: number | null;
+	notes: string | null;
 }
 
 export interface Section {
@@ -24,14 +36,22 @@ export interface GanttConfig {
 	excludes: string[]; // e.g., ['weekends', '2024-01-15']
 }
 
+export interface Tag {
+	id: string;
+	name: string;
+	color?: string; // hex color
+}
+
 export interface GanttData {
 	config: GanttConfig;
 	sections: Section[];
 	tasks: Task[];
+	tags: Tag[];
 }
 
 export interface ViewState {
-	zoomLevel: number; // index into ZOOM_LEVELS array
+	zoomLevel: number; // index into ZOOM_LEVELS array (kept for backward compatibility)
+	dayWidth: number; // continuous zoom level in pixels/day (1-100)
 	scrollX: number;
 	scrollY: number;
 	selectedTaskId: string | null;
@@ -39,6 +59,7 @@ export interface ViewState {
 	editingTaskId: string | null;
 	dateRangeStart: Date | null; // null = auto-calculate from tasks
 	dateRangeEnd: Date | null; // null = auto-calculate from tasks
+	selectedTaskIds: string[]; // multi-select support
 }
 
 // Keyboard system types
@@ -106,6 +127,7 @@ export interface SerializedGanttData {
 	config: GanttConfig;
 	sections: Section[];
 	tasks: SerializedTask[];
+	tags: Tag[];
 }
 
 export interface SerializedTask {
@@ -116,6 +138,18 @@ export interface SerializedTask {
 	endDate: string; // ISO string
 	status: TaskStatus;
 	dependencies: string[];
+	// Hierarchy
+	parentId: string | null;
+	// Visual
+	isMilestone: boolean;
+	color: string | null;
+	// Tracking
+	tags: string[];
+	estimatedHours: number | null;
+	actualHours: number | null;
+	estimatedCost: number | null;
+	actualCost: number | null;
+	notes: string | null;
 }
 
 export interface ProjectData {

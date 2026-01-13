@@ -4,11 +4,13 @@ import type {
 	GanttConfig,
 	Task,
 	Section,
+	Tag,
 	ViewState,
 	HistoryEntry,
-	ClipboardTask
+	ClipboardTask,
+	TaskStatus
 } from '$lib/types';
-import { addDays, addMonths, startOfDay } from '$lib/utils/date-utils';
+import { addDays, addMonths, startOfDay, getDateRange, diffDays } from '$lib/utils/date-utils';
 
 const GANTT_CONTEXT = Symbol('gantt');
 
@@ -36,13 +38,15 @@ function defaultConfig(): GanttConfig {
 function defaultViewState(focusedTaskId: string | null = null): ViewState {
 	return {
 		zoomLevel: 0,
+		dayWidth: ZOOM_LEVELS[0].dayWidth, // Start with Day zoom level
 		scrollX: 0,
 		scrollY: 0,
 		selectedTaskId: null,
 		focusedTaskId,
 		editingTaskId: null,
 		dateRangeStart: null,
-		dateRangeEnd: null
+		dateRangeEnd: null,
+		selectedTaskIds: []
 	};
 }
 
@@ -61,9 +65,19 @@ function defaultData(): GanttData {
 				startDate: today,
 				endDate: addDays(today, 6),
 				status: 'active',
-				dependencies: []
+				dependencies: [],
+				parentId: null,
+				isMilestone: false,
+				color: null,
+				tags: [],
+				estimatedHours: null,
+				actualHours: null,
+				estimatedCost: null,
+				actualCost: null,
+				notes: null
 			}
-		]
+		],
+		tags: []
 	};
 }
 
@@ -73,7 +87,11 @@ export class GanttStore {
 
 	view = $state<ViewState>(defaultViewState());
 
-	currentZoom = $derived(ZOOM_LEVELS[this.view.zoomLevel]);
+	// Keep currentZoom for backward compatibility
+	currentZoom = $derived({
+		name: 'Custom',
+		dayWidth: Math.max(1, Math.min(100, this.view.dayWidth))
+	});
 
 	// History for undo/redo
 	private history: HistoryEntry[] = [];
@@ -184,7 +202,16 @@ export class GanttStore {
 			startDate: partial?.startDate ?? today,
 			endDate: partial?.endDate ?? addDays(today, 6),
 			status: partial?.status ?? 'active',
-			dependencies: partial?.dependencies ?? []
+			dependencies: partial?.dependencies ?? [],
+			parentId: partial?.parentId ?? null,
+			isMilestone: partial?.isMilestone ?? false,
+			color: partial?.color ?? null,
+			tags: partial?.tags ?? [],
+			estimatedHours: partial?.estimatedHours ?? null,
+			actualHours: partial?.actualHours ?? null,
+			estimatedCost: partial?.estimatedCost ?? null,
+			actualCost: partial?.actualCost ?? null,
+			notes: partial?.notes ?? null
 		};
 
 		this.data.tasks = [...this.data.tasks, task];
@@ -208,6 +235,11 @@ export class GanttStore {
 	deleteTask(id: string): void {
 		const task = this.data.tasks.find((t) => t.id === id);
 		if (!task) return;
+
+		// Reparent children to the deleted task's parent
+		this.data.tasks = this.data.tasks.map((t) =>
+			t.parentId === id ? { ...t, parentId: task.parentId } : t
+		);
 
 		// Remove task and any dependencies pointing to it
 		this.data.tasks = this.data.tasks
@@ -233,9 +265,21 @@ export class GanttStore {
 		if (!task) return null;
 
 		return this.addTask({
-			...task,
 			title: `${task.title} (copy)`,
-			dependencies: []
+			sectionId: task.sectionId,
+			startDate: task.startDate,
+			endDate: task.endDate,
+			status: task.status,
+			dependencies: [], // Don't copy dependencies
+			parentId: task.parentId, // Keep same parent
+			isMilestone: task.isMilestone,
+			color: task.color,
+			tags: [...task.tags], // Copy tags
+			estimatedHours: task.estimatedHours,
+			actualHours: null, // Reset actual tracking
+			estimatedCost: task.estimatedCost,
+			actualCost: null, // Reset actual tracking
+			notes: task.notes
 		});
 	}
 
@@ -374,17 +418,216 @@ export class GanttStore {
 		});
 	}
 
-	// Zoom
+	// Subtask hierarchy operations
+	getTaskLevel(id: string): number {
+		let level = 0;
+		let task = this.data.tasks.find((t) => t.id === id);
+		while (task?.parentId) {
+			level++;
+			task = this.data.tasks.find((t) => t.id === task!.parentId);
+		}
+		return level;
+	}
+
+	getChildTasks(id: string): Task[] {
+		return this.data.tasks.filter((t) => t.parentId === id);
+	}
+
+	getDescendants(id: string): Task[] {
+		const children = this.getChildTasks(id);
+		return children.flatMap((c) => [c, ...this.getDescendants(c.id)]);
+	}
+
+	indentTask(id: string): void {
+		const task = this.data.tasks.find((t) => t.id === id);
+		if (!task) return;
+
+		// Find previous sibling (same section, same parent, earlier in list)
+		const siblings = this.data.tasks.filter(
+			(t) => t.sectionId === task.sectionId && t.parentId === task.parentId && t.id !== id
+		);
+		const taskIndex = this.data.tasks.findIndex((t) => t.id === id);
+		const prevSibling = siblings
+			.filter((s) => this.data.tasks.findIndex((t) => t.id === s.id) < taskIndex)
+			.pop();
+
+		if (prevSibling) {
+			this.updateTask(id, { parentId: prevSibling.id });
+		}
+	}
+
+	outdentTask(id: string): void {
+		const task = this.data.tasks.find((t) => t.id === id);
+		if (!task || !task.parentId) return;
+
+		const parent = this.data.tasks.find((t) => t.id === task.parentId);
+		this.updateTask(id, { parentId: parent?.parentId ?? null });
+	}
+
+	toggleMilestone(id: string): void {
+		const task = this.data.tasks.find((t) => t.id === id);
+		if (!task) return;
+
+		const isMilestone = !task.isMilestone;
+		const updates: Partial<Task> = { isMilestone };
+		// If becoming milestone, set endDate = startDate
+		if (isMilestone) {
+			updates.endDate = task.startDate;
+		}
+		this.updateTask(id, updates);
+	}
+
+	addSubtask(parentId: string): Task {
+		const parent = this.data.tasks.find((t) => t.id === parentId);
+		return this.addTask({
+			parentId,
+			sectionId: parent?.sectionId ?? null,
+			title: 'New Subtask'
+		});
+	}
+
+	// Tag operations
+	addTag(name: string, color?: string): Tag {
+		const tag: Tag = { id: generateId(), name, color };
+		this.data.tags = [...this.data.tags, tag];
+		this.saveHistory(`Add tag: ${name}`);
+		return tag;
+	}
+
+	updateTag(id: string, updates: Partial<Tag>): void {
+		this.data.tags = this.data.tags.map((t) => (t.id === id ? { ...t, ...updates } : t));
+		this.saveHistory('Update tag');
+	}
+
+	deleteTag(id: string): void {
+		// Remove tag from all tasks
+		this.data.tasks = this.data.tasks.map((t) => ({
+			...t,
+			tags: t.tags.filter((tagId) => tagId !== id)
+		}));
+		this.data.tags = this.data.tags.filter((t) => t.id !== id);
+		this.saveHistory('Delete tag');
+	}
+
+	// Multi-select operations
+	selectTask(id: string, addToSelection: boolean = false): void {
+		if (addToSelection) {
+			this.view.selectedTaskIds = [...new Set([...this.view.selectedTaskIds, id])];
+		} else {
+			this.view.selectedTaskIds = [id];
+		}
+		this.view.selectedTaskId = id;
+	}
+
+	selectTaskRange(fromId: string, toId: string): void {
+		const tasks = this.allTasksFlat;
+		const fromIdx = tasks.findIndex((t) => t.id === fromId);
+		const toIdx = tasks.findIndex((t) => t.id === toId);
+
+		if (fromIdx !== -1 && toIdx !== -1) {
+			const start = Math.min(fromIdx, toIdx);
+			const end = Math.max(fromIdx, toIdx);
+			this.view.selectedTaskIds = tasks.slice(start, end + 1).map((t) => t.id);
+			this.view.selectedTaskId = toId;
+		}
+	}
+
+	selectAll(): void {
+		this.view.selectedTaskIds = this.allTasksFlat.map((t) => t.id);
+		this.view.selectedTaskId = this.allTasksFlat[0]?.id ?? null;
+	}
+
+	clearSelection(): void {
+		this.view.selectedTaskIds = [];
+		this.view.selectedTaskId = null;
+	}
+
+	bulkDelete(): void {
+		const idsToDelete = new Set(this.view.selectedTaskIds);
+
+		// Reparent children
+		this.data.tasks = this.data.tasks.map((t) => {
+			if (t.parentId && idsToDelete.has(t.parentId)) {
+				return { ...t, parentId: null };
+			}
+			return t;
+		});
+
+		// Remove tasks and dependencies
+		this.data.tasks = this.data.tasks
+			.filter((t) => !idsToDelete.has(t.id))
+			.map((t) => ({
+				...t,
+				dependencies: t.dependencies.filter((d) => !idsToDelete.has(d))
+			}));
+
+		this.clearSelection();
+		this.saveHistory(`Delete ${idsToDelete.size} task(s)`);
+	}
+
+	bulkChangeColor(color: string | null): void {
+		this.data.tasks = this.data.tasks.map((t) =>
+			this.view.selectedTaskIds.includes(t.id) ? { ...t, color } : t
+		);
+		this.saveHistory('Change color for selected tasks');
+	}
+
+	bulkChangeSection(sectionId: string | null): void {
+		this.data.tasks = this.data.tasks.map((t) =>
+			this.view.selectedTaskIds.includes(t.id) ? { ...t, sectionId } : t
+		);
+		this.saveHistory('Move selected tasks to section');
+	}
+
+	bulkChangeStatus(status: TaskStatus): void {
+		this.data.tasks = this.data.tasks.map((t) =>
+			this.view.selectedTaskIds.includes(t.id) ? { ...t, status } : t
+		);
+		this.saveHistory('Change status for selected tasks');
+	}
+
+	// Zoom - discrete levels for buttons
 	zoomIn(): void {
 		this.view.zoomLevel = Math.max(0, this.view.zoomLevel - 1);
+		this.view.dayWidth = ZOOM_LEVELS[this.view.zoomLevel].dayWidth;
 	}
 
 	zoomOut(): void {
 		this.view.zoomLevel = Math.min(ZOOM_LEVELS.length - 1, this.view.zoomLevel + 1);
+		this.view.dayWidth = ZOOM_LEVELS[this.view.zoomLevel].dayWidth;
 	}
 
 	resetZoom(): void {
 		this.view.zoomLevel = 0;
+		this.view.dayWidth = ZOOM_LEVELS[0].dayWidth;
+	}
+
+	// Smooth zoom - continuous control
+	setDayWidth(width: number): void {
+		this.view.dayWidth = Math.max(1, Math.min(100, width));
+		// Find nearest zoom level for UI display
+		const closest = ZOOM_LEVELS.reduce((prev, curr, i) =>
+			Math.abs(curr.dayWidth - this.view.dayWidth) < Math.abs(ZOOM_LEVELS[prev].dayWidth - this.view.dayWidth) ? i : prev
+		, 0);
+		this.view.zoomLevel = closest;
+	}
+
+	// Fit all tasks in viewport
+	fitAll(viewportWidth: number): void {
+		if (this.data.tasks.length === 0) {
+			this.resetZoom();
+			return;
+		}
+
+		const taskRange = getDateRange(this.data.tasks);
+		const totalDays = diffDays(taskRange.start, taskRange.end) + 1;
+		const padding = 20; // pixels on each side
+		const availableWidth = viewportWidth - padding * 2;
+
+		if (availableWidth > 0 && totalDays > 0) {
+			const calculatedDayWidth = availableWidth / totalDays;
+			this.setDayWidth(calculatedDayWidth);
+		}
 	}
 
 	// Date range

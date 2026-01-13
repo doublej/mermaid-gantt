@@ -7,6 +7,7 @@
 	import { getThemeContext } from '$lib/stores/theme-store.svelte';
 
 	import GanttChart from '$lib/components/gantt/GanttChart.svelte';
+	import TableView from '$lib/components/table/TableView.svelte';
 	import KeyboardHandler from '$lib/components/keyboard/KeyboardHandler.svelte';
 	import CommandPalette from '$lib/components/keyboard/CommandPalette.svelte';
 	import ShortcutsHelp from '$lib/components/keyboard/ShortcutsHelp.svelte';
@@ -14,10 +15,19 @@
 	import ContextualHint from '$lib/components/onboarding/ContextualHint.svelte';
 	import TaskEditor from '$lib/components/editor/TaskEditor.svelte';
 	import ImportExport from '$lib/components/io/ImportExport.svelte';
+	import FileDropZone from '$lib/components/io/FileDropZone.svelte';
 	import ProjectPicker from '$lib/components/persistence/ProjectPicker.svelte';
 	import SaveStatus from '$lib/components/persistence/SaveStatus.svelte';
 	import VersionHistory from '$lib/components/persistence/VersionHistory.svelte';
 	import FileBrowser from '$lib/components/persistence/FileBrowser.svelte';
+	import { parseMermaidGantt, validateGanttData } from '$lib/utils/mermaid-parser';
+	import { importFromJson } from '$lib/utils/mermaid-exporter';
+	import type { FileType } from '$lib/components/io/FileDropZone.svelte';
+
+	// View state
+	type ViewMode = 'gantt' | 'table';
+	let currentView = $state<ViewMode>('gantt');
+	let ganttElement = $state<HTMLElement | null>(null);
 
 	// Create stores
 	const gantt = createGanttStore();
@@ -58,10 +68,42 @@
 		};
 		window.addEventListener('beforeunload', handleBeforeUnload);
 
+		// Get gantt chart element for export
+		ganttElement = document.querySelector('[data-gantt-chart]') as HTMLElement | null;
+
 		return () => {
 			window.removeEventListener('beforeunload', handleBeforeUnload);
 		};
 	});
+
+	// Handle file drop
+	function handleFileDrop(content: string, fileType: FileType, filename: string) {
+		try {
+			if (fileType === 'csv') {
+				// Open CSV importer modal
+				keyboard.openImport();
+				return;
+			}
+
+			let data;
+			if (fileType === 'json') {
+				data = importFromJson(content);
+			} else {
+				// Mermaid or unknown - try parsing as Mermaid
+				data = parseMermaidGantt(content);
+			}
+
+			const errors = validateGanttData(data);
+			if (errors.length > 0) {
+				console.error('Import validation errors:', errors);
+				return;
+			}
+
+			gantt.importData(data);
+		} catch (err) {
+			console.error('Failed to import file:', err);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -198,19 +240,51 @@
 				<span class="text-tertiary">All Shortcuts</span>
 			</div>
 
-			<button
-				onclick={() => gantt.addTask()}
-				class="btn-primary"
-			>
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-				</svg>
-				New Task
-			</button>
+			<div class="flex items-center gap-3">
+				<!-- View switcher -->
+				<div class="view-switcher">
+					<button
+						class="view-btn"
+						class:active={currentView === 'gantt'}
+						onclick={() => currentView = 'gantt'}
+						title="Gantt Chart View"
+					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+						</svg>
+						Gantt
+					</button>
+					<button
+						class="view-btn"
+						class:active={currentView === 'table'}
+						onclick={() => currentView = 'table'}
+						title="Table View"
+					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+						</svg>
+						Table
+					</button>
+				</div>
+
+				<button
+					onclick={() => gantt.addTask()}
+					class="btn-primary"
+				>
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+					</svg>
+					New Task
+				</button>
+			</div>
 		</div>
 
-		<!-- Gantt chart -->
-		<GanttChart />
+		<!-- Main view -->
+		{#if currentView === 'gantt'}
+			<GanttChart />
+		{:else}
+			<TableView />
+		{/if}
 
 		<!-- Task stats -->
 		<div class="mt-4 flex items-center gap-6 text-sm text-secondary">
@@ -227,8 +301,43 @@
 	<ShortcutsHelp />
 	<Tutorial />
 	<TaskEditor />
-	<ImportExport />
+	<ImportExport {ganttElement} />
 	<ContextualHint />
 	<VersionHistory />
 	<FileBrowser />
+	<FileDropZone onFileDrop={handleFileDrop} />
 </div>
+
+<style>
+	.view-switcher {
+		display: flex;
+		background-color: var(--color-surface-elevated);
+		border-radius: 0.5rem;
+		padding: 0.125rem;
+	}
+
+	.view-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.375rem 0.75rem;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--color-text-secondary);
+		background: transparent;
+		border: none;
+		border-radius: 0.375rem;
+		cursor: pointer;
+		transition: background-color 0.15s, color 0.15s;
+	}
+
+	.view-btn:hover {
+		color: var(--color-text);
+	}
+
+	.view-btn.active {
+		background-color: var(--color-surface);
+		color: var(--color-text);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	}
+</style>

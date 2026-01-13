@@ -19,7 +19,10 @@ Keyboard-first Gantt chart editor with Mermaid syntax import/export. Built with 
 ```
 src/routes/
 ├── +layout.svelte      # Root layout (theme provider)
+├── +layout.ts          # Prerender config (static build)
 ├── +page.svelte        # Homepage (marketing/landing)
+├── brand/
+│   └── +page.svelte    # Brand guidelines
 └── editor/
     └── +page.svelte    # Editor (creates stores, main app)
 ```
@@ -61,7 +64,7 @@ editor/+page.svelte (creates stores, provides context)
 └── Modals (CommandPalette, ShortcutsHelp, TaskEditor, ImportExport, Tutorial, VersionHistory, FileBrowser)
 ```
 
-### Mermaid Integration
+### Mermaid Integration (src/lib/utils/)
 
 - `mermaid-parser.ts`: Parses Mermaid Gantt syntax → `GanttData`
 - `mermaid-exporter.ts`: Exports `GanttData` → Mermaid syntax

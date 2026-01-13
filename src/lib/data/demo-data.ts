@@ -38,7 +38,16 @@ export function createDemoData(): GanttData {
 				startDate: addDays(today, -14),
 				endDate: addDays(today, -7),
 				status: 'done',
-				dependencies: []
+				dependencies: [],
+				parentId: null,
+				isMilestone: false,
+				color: null,
+				tags: [],
+				estimatedHours: null,
+				actualHours: null,
+				estimatedCost: null,
+				actualCost: null,
+				notes: null
 			},
 			{
 				id: 'task-design',
@@ -47,7 +56,16 @@ export function createDemoData(): GanttData {
 				startDate: addDays(today, -7),
 				endDate: addDays(today, 0),
 				status: 'active',
-				dependencies: ['task-research']
+				dependencies: ['task-research'],
+				parentId: null,
+				isMilestone: false,
+				color: null,
+				tags: [],
+				estimatedHours: null,
+				actualHours: null,
+				estimatedCost: null,
+				actualCost: null,
+				notes: null
 			},
 			{
 				id: 'task-frontend',
@@ -56,7 +74,16 @@ export function createDemoData(): GanttData {
 				startDate: addDays(today, 1),
 				endDate: addDays(today, 14),
 				status: null,
-				dependencies: ['task-design']
+				dependencies: ['task-design'],
+				parentId: null,
+				isMilestone: false,
+				color: null,
+				tags: [],
+				estimatedHours: null,
+				actualHours: null,
+				estimatedCost: null,
+				actualCost: null,
+				notes: null
 			},
 			{
 				id: 'task-backend',
@@ -65,7 +92,16 @@ export function createDemoData(): GanttData {
 				startDate: addDays(today, 1),
 				endDate: addDays(today, 10),
 				status: 'crit',
-				dependencies: ['task-design']
+				dependencies: ['task-design'],
+				parentId: null,
+				isMilestone: false,
+				color: null,
+				tags: [],
+				estimatedHours: null,
+				actualHours: null,
+				estimatedCost: null,
+				actualCost: null,
+				notes: null
 			},
 			{
 				id: 'task-deploy',
@@ -74,9 +110,19 @@ export function createDemoData(): GanttData {
 				startDate: addDays(today, 15),
 				endDate: addDays(today, 15),
 				status: 'milestone',
-				dependencies: ['task-frontend', 'task-backend']
+				dependencies: ['task-frontend', 'task-backend'],
+				parentId: null,
+				isMilestone: true,
+				color: null,
+				tags: [],
+				estimatedHours: null,
+				actualHours: null,
+				estimatedCost: null,
+				actualCost: null,
+				notes: null
 			}
-		]
+		],
+		tags: []
 	};
 }
 

@@ -27,10 +27,24 @@ function serializeData(data: GanttData): SerializedGanttData {
 		config: data.config,
 		sections: data.sections,
 		tasks: data.tasks.map((t) => ({
-			...t,
+			id: t.id,
+			title: t.title,
+			sectionId: t.sectionId,
 			startDate: t.startDate instanceof Date ? t.startDate.toISOString() : t.startDate,
-			endDate: t.endDate instanceof Date ? t.endDate.toISOString() : t.endDate
-		}))
+			endDate: t.endDate instanceof Date ? t.endDate.toISOString() : t.endDate,
+			status: t.status,
+			dependencies: t.dependencies,
+			parentId: t.parentId ?? null,
+			isMilestone: t.isMilestone ?? false,
+			color: t.color ?? null,
+			tags: t.tags ?? [],
+			estimatedHours: t.estimatedHours ?? null,
+			actualHours: t.actualHours ?? null,
+			estimatedCost: t.estimatedCost ?? null,
+			actualCost: t.actualCost ?? null,
+			notes: t.notes ?? null
+		})),
+		tags: data.tags ?? []
 	};
 }
 
@@ -39,10 +53,25 @@ function deserializeData(data: SerializedGanttData): GanttData {
 		config: data.config,
 		sections: data.sections,
 		tasks: data.tasks.map((t) => ({
-			...t,
+			id: t.id,
+			title: t.title,
+			sectionId: t.sectionId,
 			startDate: new Date(t.startDate),
-			endDate: new Date(t.endDate)
-		}))
+			endDate: new Date(t.endDate),
+			status: t.status,
+			dependencies: t.dependencies ?? [],
+			// New fields with backward-compatible defaults
+			parentId: t.parentId ?? null,
+			isMilestone: t.isMilestone ?? false,
+			color: t.color ?? null,
+			tags: t.tags ?? [],
+			estimatedHours: t.estimatedHours ?? null,
+			actualHours: t.actualHours ?? null,
+			estimatedCost: t.estimatedCost ?? null,
+			actualCost: t.actualCost ?? null,
+			notes: t.notes ?? null
+		})),
+		tags: data.tags ?? []
 	};
 }
 
@@ -179,7 +208,16 @@ export class PersistenceStore {
 					startDate: startDate.toISOString(),
 					endDate: endDate.toISOString(),
 					status: task.status,
-					dependencies: []
+					dependencies: [],
+					parentId: null,
+					isMilestone: task.status === 'milestone',
+					color: null,
+					tags: [],
+					estimatedHours: null,
+					actualHours: null,
+					estimatedCost: null,
+					actualCost: null,
+					notes: null
 				});
 			});
 		});
@@ -189,7 +227,8 @@ export class PersistenceStore {
 			current: {
 				config: { title: name, dateFormat: 'YYYY-MM-DD', axisFormat: '%Y-%m-%d', excludes: [] },
 				sections: sectionData,
-				tasks: taskData
+				tasks: taskData,
+				tags: []
 			},
 			versions: []
 		};
@@ -244,15 +283,11 @@ export class PersistenceStore {
 	}
 
 	private defaultData(): SerializedGanttData {
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-		const endDate = new Date(today);
-		endDate.setDate(endDate.getDate() + 6);
-
 		return {
 			config: { title: 'My Project', dateFormat: 'YYYY-MM-DD', axisFormat: '%Y-%m-%d', excludes: [] },
 			sections: [{ id: generateId(), name: 'Tasks', order: 0 }],
-			tasks: []
+			tasks: [],
+			tags: []
 		};
 	}
 

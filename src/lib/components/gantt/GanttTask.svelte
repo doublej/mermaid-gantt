@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Task } from '$lib/types';
+	import type { MenuItem } from '$lib/types/menu';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
+	import ContextMenu from '../ui/ContextMenu.svelte';
 
 	interface Props {
 		task: Task;
@@ -11,14 +13,24 @@
 		dayWidth: number;
 		isFocused: boolean;
 		isSelected: boolean;
+		isInMultiSelect?: boolean;
 	}
 
-	let { task, x, y, width, height, dayWidth, isFocused, isSelected }: Props = $props();
+	let { task, x, y, width, height, dayWidth, isFocused, isSelected, isInMultiSelect = false }: Props = $props();
 
 	const gantt = getGanttContext();
 
-	// Status-based colors using CSS variables
+	// Context menu state
+	let contextMenuOpen = $state(false);
+	let contextMenuX = $state(0);
+	let contextMenuY = $state(0);
+
+	// Status-based colors using CSS variables, with custom color override
 	const colors = $derived.by(() => {
+		// Custom color takes precedence
+		if (task.color) {
+			return { fill: task.color, text: '#ffffff' };
+		}
 		switch (task.status) {
 			case 'done':
 				return { fill: 'var(--color-status-done)', text: '#ffffff' };
@@ -32,8 +44,14 @@
 		}
 	});
 
-	// Milestone is rendered as diamond
-	const isMilestone = $derived(task.status === 'milestone');
+	const strokeColor = $derived(
+		isSelected ? 'var(--color-accent-hover)' : isInMultiSelect ? 'var(--color-accent)' : isFocused ? 'var(--color-accent)' : 'transparent'
+	);
+
+	const strokeWidth = $derived(isSelected ? 3 : isInMultiSelect ? 2 : isFocused ? 2 : 0);
+
+	// Milestone is rendered as diamond (use isMilestone property or milestone status)
+	const isMilestone = $derived(task.isMilestone || task.status === 'milestone');
 
 	// Drag state
 	type DragMode = 'none' | 'move' | 'resize-start' | 'resize-end';
@@ -116,6 +134,54 @@
 			gantt.view.selectedTaskId = task.id;
 		}
 	}
+
+	function handleContextMenu(event: MouseEvent) {
+		event.preventDefault();
+		event.stopPropagation();
+		contextMenuX = event.clientX;
+		contextMenuY = event.clientY;
+		contextMenuOpen = true;
+		gantt.view.focusedTaskId = task.id;
+		gantt.view.selectedTaskId = task.id;
+	}
+
+	const contextMenuItems = $derived.by((): MenuItem[] => {
+		const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+		return [
+			{
+				label: 'Edit',
+				icon: '✎',
+				action: () => (gantt.view.editingTaskId = task.id)
+			},
+			{
+				label: 'Duplicate',
+				icon: '⋰',
+				action: () => gantt.duplicateTask(task.id)
+			},
+			{ divider: true },
+			{
+				label: 'Set Color',
+				icon: '●',
+				submenu: [
+					{
+						label: 'None',
+						action: () => gantt.updateTask(task.id, { color: null })
+					},
+					...colors.map((color) => ({
+						label: '',
+						icon: `●`,
+						action: () => gantt.updateTask(task.id, { color })
+					}))
+				]
+			},
+			{ divider: true },
+			{
+				label: 'Delete',
+				icon: '🗑',
+				action: () => gantt.deleteTask(task.id)
+			}
+		];
+	});
 </script>
 
 <g
@@ -126,6 +192,7 @@
 	onclick={handleClick}
 	ondblclick={handleDoubleClick}
 	onkeydown={handleKeyDown}
+	oncontextmenu={handleContextMenu}
 	role="button"
 	aria-label="{task.title}, {task.startDate.toLocaleDateString()} to {task.endDate.toLocaleDateString()}"
 	aria-pressed={isSelected}
@@ -151,8 +218,8 @@
 		<polygon
 			points="{centerX},{centerY - size} {centerX + size},{centerY} {centerX},{centerY + size} {centerX - size},{centerY}"
 			fill={colors.fill}
-			stroke={isSelected ? 'var(--color-accent-hover)' : isFocused ? 'var(--color-accent)' : 'transparent'}
-			stroke-width={isSelected ? 3 : isFocused ? 2 : 0}
+			stroke={strokeColor}
+			stroke-width={strokeWidth}
 			class:opacity-80={isDragging}
 		/>
 
@@ -186,8 +253,8 @@
 			{height}
 			rx="4"
 			fill={colors.fill}
-			stroke={isSelected ? 'var(--color-accent-hover)' : isFocused ? 'var(--color-accent)' : 'transparent'}
-			stroke-width={isSelected ? 3 : isFocused ? 2 : 0}
+			stroke={strokeColor}
+			stroke-width={strokeWidth}
 			class="transition-colors duration-150"
 			class:opacity-80={isDragging}
 		/>
@@ -278,3 +345,13 @@
 		<path d="M-1,1 l2,-2 M0,8 l8,-8 M7,9 l2,-2" stroke="#ffffff" stroke-width="1" />
 	</pattern>
 </defs>
+
+<!-- Context menu -->
+{#if contextMenuOpen}
+	<ContextMenu
+		items={contextMenuItems}
+		x={contextMenuX}
+		y={contextMenuY}
+		onClose={() => (contextMenuOpen = false)}
+	/>
+{/if}

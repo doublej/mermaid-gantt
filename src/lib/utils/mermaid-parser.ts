@@ -113,7 +113,17 @@ function parseTaskLine(line: string, ctx: ParseContext): void {
 		startDate,
 		endDate,
 		status,
-		dependencies: startSpec.startsWith('after ') ? findDependencies(startSpec, ctx) : []
+		dependencies: startSpec.startsWith('after ') ? findDependencies(startSpec, ctx) : [],
+		// New fields with defaults
+		parentId: null,
+		isMilestone: status === 'milestone',
+		color: null,
+		tags: [],
+		estimatedHours: null,
+		actualHours: null,
+		estimatedCost: null,
+		actualCost: null,
+		notes: null
 	};
 
 	ctx.tasks.push(task);
@@ -200,7 +210,8 @@ export function parseMermaidGantt(input: string): GanttData {
 	return {
 		config: ctx.config,
 		sections: ctx.sections,
-		tasks: ctx.tasks
+		tasks: ctx.tasks,
+		tags: []
 	};
 }
 

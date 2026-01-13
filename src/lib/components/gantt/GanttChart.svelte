@@ -8,13 +8,16 @@
 
 	const gantt = getGanttContext();
 
+	// Track collapsed parent tasks
+	let collapsedTasks = $state(new Set<string>());
+
 	// Layout constants
 	const ROW_HEIGHT = 40;
 	const HEADER_HEIGHT = 48;
 	const SIDEBAR_WIDTH = 200;
 
-	// Day width derived from current zoom level
-	const dayWidth = $derived(gantt.currentZoom.dayWidth);
+	// Day width from store (supports smooth zoom)
+	const dayWidth = $derived(gantt.view.dayWidth);
 
 	// Minimum 3-month span constant
 	const MIN_DAYS = 90;
@@ -39,11 +42,35 @@
 
 	const totalDays = $derived(diffDays(dateRange.start, dateRange.end) + 1);
 	const chartWidth = $derived(totalDays * dayWidth);
-	// Total rows = sections + tasks
-	const totalRows = $derived(gantt.data.sections.length + gantt.data.tasks.length);
+
+	// Filter visible tasks (accounting for collapsed parents)
+	const visibleTaskIds = $derived.by(() => {
+		const visible = new Set<string>();
+		for (const task of gantt.data.tasks) {
+			// Check if any ancestor is collapsed
+			let isHidden = false;
+			let current = task;
+			while (current.parentId) {
+				if (collapsedTasks.has(current.parentId)) {
+					isHidden = true;
+					break;
+				}
+				const parent = gantt.data.tasks.find(t => t.id === current.parentId);
+				if (!parent) break;
+				current = parent;
+			}
+			if (!isHidden) visible.add(task.id);
+		}
+		return visible;
+	});
+
+	// Total rows = sections + visible tasks
+	const totalRows = $derived(
+		gantt.data.sections.length + visibleTaskIds.size
+	);
 	const chartHeight = $derived(totalRows * ROW_HEIGHT + HEADER_HEIGHT);
 
-	// Calculate task positions (accounting for section header rows)
+	// Calculate task positions (accounting for section header rows and collapsed tasks)
 	const taskPositions = $derived.by(() => {
 		const positions: { task: typeof gantt.data.tasks[0]; x: number; y: number; width: number; height: number }[] = [];
 		let rowIndex = 0;
@@ -52,8 +79,10 @@
 			// Section header takes one row
 			rowIndex++;
 
-			// Each task in section
+			// Each visible task in section
 			for (const task of tasks) {
+				if (!visibleTaskIds.has(task.id)) continue;
+
 				const startOffset = diffDays(dateRange.start, task.startDate);
 				const duration = diffDays(task.startDate, task.endDate) + 1;
 
@@ -76,11 +105,62 @@
 		new Map(taskPositions.map((p) => [p.task.id, p]))
 	);
 
+	// Check if a task is visible (not hidden by collapsed parent)
+	function isTaskVisible(taskId: string): boolean {
+		let task = gantt.data.tasks.find(t => t.id === taskId);
+		while (task?.parentId) {
+			if (collapsedTasks.has(task.parentId)) return false;
+			task = gantt.data.tasks.find(t => t.id === task!.parentId);
+		}
+		return true;
+	}
+
+	// Check if a task has visible children
+	function hasChildren(taskId: string): boolean {
+		return gantt.getChildTasks(taskId).length > 0;
+	}
+
+	// Toggle collapse state
+	function toggleCollapse(taskId: string, event: MouseEvent) {
+		event.stopPropagation();
+		const newSet = new Set(collapsedTasks);
+		if (newSet.has(taskId)) {
+			newSet.delete(taskId);
+		} else {
+			newSet.add(taskId);
+		}
+		collapsedTasks = newSet;
+	}
+
+	function handleWheel(event: WheelEvent) {
+		// Only zoom on Ctrl+wheel (or Cmd+wheel on Mac)
+		if (!event.ctrlKey && !event.metaKey) return;
+		event.preventDefault();
+
+		// Calculate zoom based on scroll direction
+		const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1; // Zoom out/in
+		const newDayWidth = gantt.view.dayWidth * zoomFactor;
+
+		// Apply smooth zoom
+		gantt.setDayWidth(newDayWidth);
+	}
+
 	function handleClick(event: MouseEvent) {
 		// Deselect when clicking on empty space
 		const target = event.target as Element;
 		if (target.closest('[data-task]')) return;
 		gantt.view.selectedTaskId = null;
+	}
+
+	function handleTaskRowClick(taskId: string, event: MouseEvent) {
+		// Handle multi-select with Ctrl/Cmd and Shift
+		if (event.ctrlKey || event.metaKey) {
+			gantt.selectTask(taskId, true);
+		} else if (event.shiftKey && gantt.view.selectedTaskId) {
+			gantt.selectTaskRange(gantt.view.selectedTaskId, taskId);
+		} else {
+			gantt.selectTask(taskId, false);
+		}
 	}
 </script>
 
@@ -89,6 +169,7 @@
 	class="gantt-container"
 	data-gantt-chart
 	onclick={handleClick}
+	onwheel={handleWheel}
 	role="application"
 	aria-label="Gantt chart editor"
 >
@@ -120,20 +201,47 @@
 			{#each tasks as task (task.id)}
 				{@const isFocused = gantt.view.focusedTaskId === task.id}
 				{@const isSelected = gantt.view.selectedTaskId === task.id}
-				<button
-					class="task-row"
-					class:focused={isFocused}
-					class:selected={isSelected}
-					style:height="{ROW_HEIGHT}px"
-					data-task-name={task.id}
-					data-task-focused={isFocused || undefined}
-					onclick={() => {
-						gantt.view.focusedTaskId = task.id;
-						gantt.view.selectedTaskId = task.id;
-					}}
-				>
-					{task.title}
-				</button>
+				{@const isInMultiSelect = gantt.view.selectedTaskIds.includes(task.id)}
+				{@const level = gantt.getTaskLevel(task.id)}
+				{@const taskHasChildren = hasChildren(task.id)}
+				{@const isCollapsed = collapsedTasks.has(task.id)}
+				{#if isTaskVisible(task.id)}
+					<button
+						class="task-row"
+						class:focused={isFocused}
+						class:selected={isSelected}
+						class:multi-selected={isInMultiSelect}
+						style:height="{ROW_HEIGHT}px"
+						style:padding-left="{1 + level * 1}rem"
+						data-task-name={task.id}
+						data-task-focused={isFocused || undefined}
+						onclick={(e) => handleTaskRowClick(task.id, e)}
+					>
+						<!-- Expand/collapse chevron for parent tasks -->
+						{#if taskHasChildren}
+							<button
+								class="chevron-btn"
+								class:collapsed={isCollapsed}
+								onclick={(e) => toggleCollapse(task.id, e)}
+								aria-label={isCollapsed ? 'Expand' : 'Collapse'}
+							>
+								<svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+								</svg>
+							</button>
+						{:else}
+							<span class="chevron-spacer"></span>
+						{/if}
+
+						<!-- Color dot -->
+						{#if task.color}
+							<span class="color-dot" style:background-color={task.color}></span>
+						{/if}
+
+						<!-- Task title -->
+						<span class="task-title">{task.title}</span>
+					</button>
+				{/if}
 			{/each}
 		{/each}
 	</div>
@@ -191,6 +299,7 @@
 					{dayWidth}
 					isFocused={gantt.view.focusedTaskId === pos.task.id}
 					isSelected={gantt.view.selectedTaskId === pos.task.id}
+					isInMultiSelect={gantt.view.selectedTaskIds.includes(pos.task.id)}
 				/>
 			{/each}
 		</svg>
@@ -306,14 +415,11 @@
 	.task-row {
 		display: flex;
 		align-items: center;
+		gap: 0.375rem;
 		width: 100%;
-		padding-left: 1rem;
 		padding-right: 1rem;
 		text-align: left;
 		font-size: 0.875rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 		color: var(--color-text);
 		background: transparent;
 		border: none;
@@ -332,6 +438,57 @@
 
 	.task-row.selected {
 		box-shadow: inset 0 0 0 2px var(--color-accent);
+	}
+
+	.task-row.multi-selected {
+		background-color: var(--color-accent-subtle);
+		box-shadow: inset 0 0 0 1px var(--color-accent);
+	}
+
+	.task-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.chevron-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 1rem;
+		height: 1rem;
+		padding: 0;
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		color: var(--color-text-secondary);
+		transition: transform 0.15s, color 0.15s;
+	}
+
+	.chevron-btn:hover {
+		color: var(--color-text);
+	}
+
+	.chevron-btn.collapsed {
+		transform: rotate(-90deg);
+	}
+
+	.chevron-icon {
+		width: 0.75rem;
+		height: 0.75rem;
+	}
+
+	.chevron-spacer {
+		width: 1rem;
+		flex-shrink: 0;
+	}
+
+	.color-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		flex-shrink: 0;
 	}
 
 	.gantt-chart {
