@@ -4,7 +4,9 @@
 	import { createKeyboardStore, setKeyboardContext } from '$lib/stores/keyboard-store.svelte';
 	import { createOnboardingStore, setOnboardingContext } from '$lib/stores/onboarding-store.svelte';
 	import { createPersistenceStore, setPersistenceContext } from '$lib/stores/persistence-store.svelte';
+	import { createTemplateStore, setTemplateContext } from '$lib/stores/template-store.svelte';
 	import { getThemeContext } from '$lib/stores/theme-store.svelte';
+	import { BUILTIN_TEMPLATES } from '$lib/data/templates';
 
 	import GanttChart from '$lib/components/gantt/GanttChart.svelte';
 	import TableView from '$lib/components/table/TableView.svelte';
@@ -34,6 +36,7 @@
 	const keyboard = createKeyboardStore();
 	const onboarding = createOnboardingStore();
 	const persistence = createPersistenceStore();
+	const template = createTemplateStore(BUILTIN_TEMPLATES);
 	const theme = getThemeContext();
 
 	// Provide context
@@ -41,6 +44,7 @@
 	setKeyboardContext(keyboard);
 	setOnboardingContext(onboarding);
 	setPersistenceContext(persistence);
+	setTemplateContext(template);
 
 	// Track data hash for change detection
 	let lastDataHash = '';
