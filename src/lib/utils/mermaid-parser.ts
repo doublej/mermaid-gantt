@@ -1,9 +1,6 @@
 import type { GanttData, GanttConfig, Task, Section, TaskStatus } from '$lib/types';
 import { addDays, parseDate, parseDuration, startOfDay } from './date-utils';
-
-function generateId(): string {
-	return Math.random().toString(36).slice(2, 9);
-}
+import { generateId } from './id';
 
 function defaultConfig(): GanttConfig {
 	return {

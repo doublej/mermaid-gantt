@@ -1,4 +1,5 @@
-import html2canvas from 'html2canvas';
+import { downloadBlob } from './download';
+import { captureElementAsCanvas } from './export-utils';
 
 export interface PNGExportOptions {
 	scale?: number;
@@ -14,18 +15,7 @@ export async function exportToPNG(
 	options: PNGExportOptions = {}
 ): Promise<void> {
 	const { scale = 2, filename = 'gantt-chart.png', backgroundColor } = options;
-
-	// Determine background color
-	const bgColor =
-		backgroundColor ?? getComputedStyle(element).backgroundColor ?? '#ffffff';
-
-	// Capture the element as a canvas
-	const canvas = await html2canvas(element, {
-		scale,
-		useCORS: true,
-		logging: false,
-		backgroundColor: bgColor
-	});
+	const canvas = await captureElementAsCanvas(element, scale, backgroundColor);
 
 	// Convert to blob and download
 	const blob = await new Promise<Blob>((resolve, reject) => {
@@ -38,12 +28,7 @@ export async function exportToPNG(
 		}, 'image/png');
 	});
 
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = filename;
-	a.click();
-	URL.revokeObjectURL(url);
+	downloadBlob(blob, filename);
 }
 
 /**
@@ -54,16 +39,6 @@ export async function getPNGDataURL(
 	options: Omit<PNGExportOptions, 'filename'> = {}
 ): Promise<string> {
 	const { scale = 2, backgroundColor } = options;
-
-	const bgColor =
-		backgroundColor ?? getComputedStyle(element).backgroundColor ?? '#ffffff';
-
-	const canvas = await html2canvas(element, {
-		scale,
-		useCORS: true,
-		logging: false,
-		backgroundColor: bgColor
-	});
-
+	const canvas = await captureElementAsCanvas(element, scale, backgroundColor);
 	return canvas.toDataURL('image/png');
 }

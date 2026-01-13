@@ -13,67 +13,13 @@ import type {
 import type { GanttStore } from './gantt-store.svelte';
 
 const PERSISTENCE_CONTEXT = Symbol('persistence');
+import { generateId } from '$lib/utils/id';
+import { serializeGanttData, deserializeGanttData } from '$lib/utils/serialize';
+
 const STORAGE_PREFIX = 'gantt:';
 const MAX_AUTO_VERSIONS = 60; // Keep ~1 hour of history at 1/min
 const MAX_MANUAL_VERSIONS = 10;
 const AUTO_SNAPSHOT_INTERVAL = 60 * 1000; // 1 minute
-
-function generateId(): string {
-	return Math.random().toString(36).slice(2, 9);
-}
-
-function serializeData(data: GanttData): SerializedGanttData {
-	return {
-		config: data.config,
-		sections: data.sections,
-		tasks: data.tasks.map((t) => ({
-			id: t.id,
-			title: t.title,
-			sectionId: t.sectionId,
-			startDate: t.startDate instanceof Date ? t.startDate.toISOString() : t.startDate,
-			endDate: t.endDate instanceof Date ? t.endDate.toISOString() : t.endDate,
-			status: t.status,
-			dependencies: t.dependencies,
-			parentId: t.parentId ?? null,
-			isMilestone: t.isMilestone ?? false,
-			color: t.color ?? null,
-			tags: t.tags ?? [],
-			estimatedHours: t.estimatedHours ?? null,
-			actualHours: t.actualHours ?? null,
-			estimatedCost: t.estimatedCost ?? null,
-			actualCost: t.actualCost ?? null,
-			notes: t.notes ?? null
-		})),
-		tags: data.tags ?? []
-	};
-}
-
-function deserializeData(data: SerializedGanttData): GanttData {
-	return {
-		config: data.config,
-		sections: data.sections,
-		tasks: data.tasks.map((t) => ({
-			id: t.id,
-			title: t.title,
-			sectionId: t.sectionId,
-			startDate: new Date(t.startDate),
-			endDate: new Date(t.endDate),
-			status: t.status,
-			dependencies: t.dependencies ?? [],
-			// New fields with backward-compatible defaults
-			parentId: t.parentId ?? null,
-			isMilestone: t.isMilestone ?? false,
-			color: t.color ?? null,
-			tags: t.tags ?? [],
-			estimatedHours: t.estimatedHours ?? null,
-			actualHours: t.actualHours ?? null,
-			estimatedCost: t.estimatedCost ?? null,
-			actualCost: t.actualCost ?? null,
-			notes: t.notes ?? null
-		})),
-		tags: data.tags ?? []
-	};
-}
 
 export class PersistenceStore {
 	// Reactive state
@@ -274,7 +220,7 @@ export class PersistenceStore {
 		// Initialize empty project data
 		const projectData: ProjectData = {
 			meta,
-			current: this.ganttStore ? serializeData(this.ganttStore.exportData()) : this.defaultData(),
+			current: this.ganttStore ? serializeGanttData(this.ganttStore.exportData()) : this.defaultData(),
 			versions: []
 		};
 		localStorage.setItem(`${STORAGE_PREFIX}project:${id}`, JSON.stringify(projectData));
@@ -331,7 +277,7 @@ export class PersistenceStore {
 		// Load new project data into gantt store
 		const data = this.loadProjectData(id);
 		if (data && this.ganttStore) {
-			this.ganttStore.importData(deserializeData(data.current));
+			this.ganttStore.importData(deserializeGanttData(data.current));
 			this.lastAutoSnapshot = this.findLastAutoSnapshotTime(data.versions);
 			this.dataHash = this.computeHash(data.current);
 		}
@@ -369,7 +315,7 @@ export class PersistenceStore {
 		if (this.currentProjectId) {
 			const data = this.loadProjectData(this.currentProjectId);
 			if (data) {
-				ganttStore.importData(deserializeData(data.current));
+				ganttStore.importData(deserializeGanttData(data.current));
 				this.lastAutoSnapshot = this.findLastAutoSnapshotTime(data.versions);
 				this.dataHash = this.computeHash(data.current);
 			}
@@ -403,7 +349,7 @@ export class PersistenceStore {
 		const data = this.loadProjectData(this.currentProjectId);
 		if (!data) return;
 
-		const serialized = serializeData(this.ganttStore.exportData());
+		const serialized = serializeGanttData(this.ganttStore.exportData());
 		const newHash = this.computeHash(serialized);
 
 		// Skip if nothing changed
@@ -468,7 +414,7 @@ export class PersistenceStore {
 			id: generateId(),
 			name: name || `Snapshot ${new Date().toLocaleString()}`,
 			timestamp: Date.now(),
-			data: serializeData(this.ganttStore.exportData())
+			data: serializeGanttData(this.ganttStore.exportData())
 		});
 		localStorage.setItem(`${STORAGE_PREFIX}project:${this.currentProjectId}`, JSON.stringify(data));
 	}
@@ -486,7 +432,7 @@ export class PersistenceStore {
 		this.createSnapshot('Before restore');
 
 		// Restore the version
-		this.ganttStore.importData(deserializeData(version.data));
+		this.ganttStore.importData(deserializeGanttData(version.data));
 		data.current = version.data;
 		data.meta.updatedAt = Date.now();
 

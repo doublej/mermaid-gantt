@@ -88,46 +88,7 @@ export function getDateRange(tasks: { startDate: Date; endDate: Date }[]): {
 	return { start: startOfDay(start), end: startOfDay(end) };
 }
 
-export function generateDateLabels(
-	start: Date,
-	end: Date,
-	zoom: number
-): { date: Date; label: string }[] {
-	const labels: { date: Date; label: string }[] = [];
-	const current = new Date(start);
-
-	while (current <= end) {
-		const label =
-			zoom >= 7
-				? `Week ${getWeekNumber(current)}`
-				: zoom >= 30
-					? current.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-					: current.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-		labels.push({ date: new Date(current), label });
-		current.setDate(current.getDate() + zoom);
-	}
-
-	return labels;
-}
-
-function getWeekNumber(date: Date): number {
-	const d = new Date(date);
-	d.setHours(0, 0, 0, 0);
-	d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-	const yearStart = new Date(d.getFullYear(), 0, 1);
-	return Math.ceil(((d.getTime() - yearStart.getTime()) / MS_PER_DAY + 1) / 7);
-}
-
 export function isWeekend(date: Date): boolean {
 	const day = date.getDay();
 	return day === 0 || day === 6;
-}
-
-export function getMonday(date: Date): Date {
-	const d = new Date(date);
-	const day = d.getDay();
-	const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-	d.setDate(diff);
-	return startOfDay(d);
 }

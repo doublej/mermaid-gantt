@@ -1,11 +1,8 @@
 import type { Template } from '$lib/stores/template-store.svelte';
 import { addDays, addMonths, startOfDay } from '$lib/utils/date-utils';
+import { generateId } from '$lib/utils/id';
 
 const today = startOfDay(new Date());
-
-function generateId(): string {
-	return Math.random().toString(36).slice(2, 9);
-}
 
 // Helper to add weeks
 function addWeeks(date: Date, weeks: number): Date {

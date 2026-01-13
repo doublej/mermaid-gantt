@@ -2,6 +2,7 @@
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
 	import { parseCSV } from '$lib/utils/csv-parser';
 	import { parseDate } from '$lib/utils/date-utils';
+	import { generateId } from '$lib/utils/id';
 	import type { Task, GanttData } from '$lib/types';
 
 	interface Props {
@@ -205,10 +206,6 @@
 		};
 
 		onImport(data);
-	}
-
-	function generateId(): string {
-		return Math.random().toString(36).slice(2, 9);
 	}
 </script>
 

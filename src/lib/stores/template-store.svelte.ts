@@ -1,6 +1,7 @@
 import { getContext, setContext } from 'svelte';
 import { browser } from '$app/environment';
 import type { SerializedGanttData } from '$lib/types';
+import { generateId } from '$lib/utils/id';
 
 const TEMPLATE_CONTEXT = Symbol('template');
 const STORAGE_PREFIX = 'gantt:template:';
@@ -16,8 +17,13 @@ export interface Template {
 }
 
 export class TemplateStore {
+	// User-created templates
 	templates = $state<Template[]>([]);
+	// Built-in templates provided at construction
 	builtInTemplates = $state<Template[]>([]);
+
+	// Derived: all templates combined
+	allTemplates = $derived([...this.builtInTemplates, ...this.templates]);
 
 	constructor(builtIns: Template[]) {
 		this.builtInTemplates = builtIns;
@@ -49,17 +55,17 @@ export class TemplateStore {
 
 	// Get all templates (built-in + user)
 	getTemplates(): Template[] {
-		return [...this.builtInTemplates, ...this.templates];
+		return this.allTemplates;
 	}
 
 	// Get user templates only
 	getUserTemplates(): Template[] {
-		return [...this.templates];
+		return this.templates;
 	}
 
 	// Get built-in templates only
 	getBuiltInTemplates(): Template[] {
-		return [...this.builtInTemplates];
+		return this.builtInTemplates;
 	}
 
 	// Save current project as template
@@ -67,7 +73,7 @@ export class TemplateStore {
 		if (!browser) throw new Error('Cannot save template in non-browser environment');
 
 		const template: Template = {
-			id: Math.random().toString(36).slice(2, 9),
+			id: generateId(),
 			name,
 			description,
 			data,

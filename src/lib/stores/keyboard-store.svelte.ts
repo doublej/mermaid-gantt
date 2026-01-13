@@ -3,15 +3,13 @@ import type { KeyBinding, KeyCategory, KeyModifier } from '$lib/types';
 
 const KEYBOARD_CONTEXT = Symbol('keyboard');
 
-export type KeyboardMode = 'normal' | 'editing' | 'command-palette' | 'help' | 'smart-import';
+export type KeyboardMode = 'normal' | 'editing' | 'command-palette' | 'help' | 'smart-import' | 'import-export';
 
 // All keyboard bindings
 export const keyBindings: KeyBinding[] = [
 	// Navigation
 	{ key: 'ArrowUp', modifiers: [], action: 'focusPrev', description: 'Focus previous task', category: 'navigation' },
 	{ key: 'ArrowDown', modifiers: [], action: 'focusNext', description: 'Focus next task', category: 'navigation' },
-	{ key: 'ArrowLeft', modifiers: [], action: 'collapseSection', description: 'Collapse section', category: 'navigation' },
-	{ key: 'ArrowRight', modifiers: [], action: 'expandSection', description: 'Expand section', category: 'navigation' },
 	{ key: 'Home', modifiers: [], action: 'focusFirst', description: 'Focus first task', category: 'navigation' },
 	{ key: 'End', modifiers: [], action: 'focusLast', description: 'Focus last task', category: 'navigation' },
 	{ key: 'Tab', modifiers: [], action: 'focusNext', description: 'Focus next task', category: 'navigation' },
@@ -37,7 +35,8 @@ export const keyBindings: KeyBinding[] = [
 	{ key: '=', modifiers: ['ctrl'], action: 'zoomIn', description: 'Zoom in', category: 'timeline' },
 	{ key: '+', modifiers: ['ctrl'], action: 'zoomIn', description: 'Zoom in', category: 'timeline' },
 	{ key: '-', modifiers: ['ctrl'], action: 'zoomOut', description: 'Zoom out', category: 'timeline' },
-	{ key: '0', modifiers: ['ctrl'], action: 'resetZoom', description: 'Reset zoom', category: 'timeline' },
+	{ key: '0', modifiers: ['ctrl'], action: 'fitAll', description: 'Fit all tasks', category: 'timeline' },
+	{ key: '0', modifiers: ['ctrl', 'shift'], action: 'resetZoom', description: 'Reset zoom', category: 'timeline' },
 	{ key: 'ArrowLeft', modifiers: ['shift'], action: 'moveStartLeft', description: 'Move task start -1 day', category: 'timeline' },
 	{ key: 'ArrowRight', modifiers: ['shift'], action: 'moveStartRight', description: 'Move task start +1 day', category: 'timeline' },
 	{ key: 'ArrowLeft', modifiers: ['alt'], action: 'moveEndLeft', description: 'Move task end -1 day', category: 'timeline' },
@@ -72,7 +71,8 @@ export const keyBindings: KeyBinding[] = [
 	{ key: 'E', modifiers: ['ctrl', 'shift'], action: 'exportPng', description: 'Export PNG', category: 'global' },
 	{ key: '1', modifiers: ['ctrl'], action: 'switchGanttView', description: 'Switch to Gantt view', category: 'global' },
 	{ key: '2', modifiers: ['ctrl'], action: 'switchTableView', description: 'Switch to Table view', category: 'global' },
-	{ key: '0', modifiers: ['ctrl'], action: 'fitAll', description: 'Fit all (zoom to fit)', category: 'global' },
+	{ key: 'b', modifiers: ['ctrl'], action: 'openFileBrowser', description: 'Browse projects', category: 'global' },
+	{ key: 'B', modifiers: ['ctrl'], action: 'openFileBrowser', description: 'Browse projects', category: 'global' },
 	{ key: ']', modifiers: ['ctrl'], action: 'indentTask', description: 'Indent task', category: 'task' },
 	{ key: '[', modifiers: ['ctrl'], action: 'outdentTask', description: 'Outdent task', category: 'task' },
 	{ key: 'm', modifiers: [], action: 'toggleMilestone', description: 'Toggle milestone', category: 'task' },
@@ -85,11 +85,13 @@ export const keyBindings: KeyBinding[] = [
 export class KeyboardStore {
 	mode = $state<KeyboardMode>('normal');
 
-	// Track which modals are open
-	showCommandPalette = $state(false);
-	showHelp = $state(false);
-	showImportExport = $state(false);
-	showSmartImport = $state(false);
+	// Derived modal visibility from mode (single source of truth)
+	showCommandPalette = $derived(this.mode === 'command-palette');
+	showHelp = $derived(this.mode === 'help');
+	showImportExport = $derived(this.mode === 'import-export');
+	showSmartImport = $derived(this.mode === 'smart-import');
+
+	// Component-specific state (will be moved to components in Phase 2)
 	importExportMode = $state<'import' | 'export'>('export');
 	smartImportInitialText = $state<string | null>(null);
 
@@ -155,41 +157,29 @@ export class KeyboardStore {
 
 	// Open/close modals
 	openCommandPalette(): void {
-		this.closeAllModals();
-		this.showCommandPalette = true;
 		this.mode = 'command-palette';
 	}
 
 	openHelp(): void {
-		this.closeAllModals();
-		this.showHelp = true;
 		this.mode = 'help';
 	}
 
 	openImport(): void {
-		this.closeAllModals();
-		this.showImportExport = true;
 		this.importExportMode = 'import';
+		this.mode = 'import-export';
 	}
 
 	openExport(): void {
-		this.closeAllModals();
-		this.showImportExport = true;
 		this.importExportMode = 'export';
+		this.mode = 'import-export';
 	}
 
 	openSmartImport(initialText: string | null = null): void {
-		this.closeAllModals();
-		this.showSmartImport = true;
 		this.smartImportInitialText = initialText;
 		this.mode = 'smart-import';
 	}
 
 	closeAllModals(): void {
-		this.showCommandPalette = false;
-		this.showHelp = false;
-		this.showImportExport = false;
-		this.showSmartImport = false;
 		this.smartImportInitialText = null;
 		this.mode = 'normal';
 	}
@@ -221,6 +211,36 @@ function formatKeyDisplay(key: string): string {
 		' ': 'Space',
 	};
 	return keyMap[key] ?? key.toUpperCase();
+}
+
+// Get CSS width class for a key - MacBook proportions
+export function getKeyWidthClass(key: string): string {
+	const wide = ['Shift', '⇧'];
+	const medium = ['Ctrl', 'Control', 'Alt', 'Option', 'Cmd', 'Command', 'Tab', 'Esc', 'Escape', 'Enter', '↵', 'Delete', 'Del', 'Backspace', '⌫', '⌘', '⌥', 'PgUp', 'PgDn'];
+	const space = ['Space', ' '];
+
+	if (wide.includes(key)) return 'kbd-wide';
+	if (medium.includes(key)) return 'kbd-medium';
+	if (space.includes(key)) return 'kbd-space';
+	return 'kbd-narrow';
+}
+
+// Format binding as array of individual keys for separate rendering
+export function formatKeyParts(binding: KeyBinding): string[] {
+	const parts: string[] = [];
+
+	if (binding.modifiers.includes('ctrl')) {
+		parts.push(isMac() ? '⌘' : 'Ctrl');
+	}
+	if (binding.modifiers.includes('shift')) {
+		parts.push(isMac() ? '⇧' : 'Shift');
+	}
+	if (binding.modifiers.includes('alt')) {
+		parts.push(isMac() ? '⌥' : 'Alt');
+	}
+
+	parts.push(formatKeyDisplay(binding.key));
+	return parts;
 }
 
 // Get unique bindings for command palette

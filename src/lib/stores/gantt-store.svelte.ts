@@ -11,6 +11,7 @@ import type {
 	TaskStatus
 } from '$lib/types';
 import { addDays, addMonths, startOfDay, getDateRange, diffDays } from '$lib/utils/date-utils';
+import { generateId } from '$lib/utils/id';
 
 const GANTT_CONTEXT = Symbol('gantt');
 
@@ -21,10 +22,6 @@ export const ZOOM_LEVELS = [
 	{ name: 'Month', dayWidth: 4 },
 	{ name: 'Quarter', dayWidth: 1.5 }
 ] as const;
-
-function generateId(): string {
-	return Math.random().toString(36).slice(2, 9);
-}
 
 function defaultConfig(): GanttConfig {
 	return {
@@ -115,13 +112,8 @@ export class GanttStore {
 		}))
 	);
 
-	allTasksFlat = $derived(
-		this.data.sections.flatMap((s) =>
-			this.data.tasks
-				.filter((t) => t.sectionId === s.id)
-				.sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-		)
-	);
+	// Derive from tasksBySection to avoid duplicate filtering/sorting
+	allTasksFlat = $derived(this.tasksBySection.flatMap((ts) => ts.tasks));
 
 	canUndo = $derived(this.historyIndex > 0);
 	canRedo = $derived(this.historyIndex < this.history.length - 1);

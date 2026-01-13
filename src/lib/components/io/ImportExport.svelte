@@ -6,6 +6,7 @@
 	import { exportToCSV, downloadCSV } from '$lib/utils/csv-exporter';
 	import { exportToPDF } from '$lib/utils/pdf-exporter';
 	import { exportToPNG } from '$lib/utils/png-exporter';
+	import { downloadBlob } from '$lib/utils/download';
 	import CSVImporter from './CSVImporter.svelte';
 	import type { GanttData } from '$lib/types';
 
@@ -116,12 +117,7 @@
 		}
 
 		const blob = new Blob([exportText()], { type: 'text/plain' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `gantt-chart.${exportFormat === 'mermaid' ? 'mmd' : 'json'}`;
-		a.click();
-		URL.revokeObjectURL(url);
+		downloadBlob(blob, `gantt-chart.${exportFormat === 'mermaid' ? 'mmd' : 'json'}`);
 	}
 
 	async function handlePDFExport() {
@@ -187,6 +183,11 @@
 	function openCSVImporter() {
 		showCSVImporter = true;
 	}
+
+	function openSmartImport() {
+		close();
+		keyboard.openSmartImport();
+	}
 </script>
 
 {#if keyboard.showImportExport}
@@ -233,6 +234,22 @@
 					{#if keyboard.importExportMode === 'import'}
 						<!-- Import mode -->
 						<div class="space-y-4">
+							<!-- Smart Import banner -->
+							<div class="smart-import-banner">
+								<div class="banner-content">
+									<svg class="banner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+									</svg>
+									<div class="banner-text">
+										<strong>Have unstructured data?</strong>
+										<span>Try Smart Import to convert task lists, project descriptions, or meeting notes</span>
+									</div>
+								</div>
+								<button onclick={openSmartImport} class="btn-secondary text-sm">
+									Smart Import
+								</button>
+							</div>
+
 							<!-- Format selector -->
 							<div class="flex gap-4 flex-wrap">
 								<label class="radio-label">
@@ -548,5 +565,45 @@
 	.btn-primary:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.smart-import-banner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.75rem 1rem;
+		background: linear-gradient(135deg, var(--color-accent-subtle) 0%, var(--color-surface-elevated) 100%);
+		border: 1px solid var(--color-accent-light);
+		border-radius: 0.5rem;
+	}
+
+	.banner-content {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.banner-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		flex-shrink: 0;
+		color: var(--color-accent);
+	}
+
+	.banner-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.125rem;
+	}
+
+	.banner-text strong {
+		font-size: 0.875rem;
+		color: var(--color-text);
+	}
+
+	.banner-text span {
+		font-size: 0.75rem;
+		color: var(--color-text-secondary);
 	}
 </style>

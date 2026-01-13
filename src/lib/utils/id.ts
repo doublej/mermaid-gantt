@@ -1,0 +1,6 @@
+/**
+ * Generate a short random ID (7 alphanumeric characters)
+ */
+export function generateId(): string {
+	return Math.random().toString(36).slice(2, 9);
+}

@@ -1,6 +1,7 @@
 import type { GanttData } from '$lib/types';
 import { formatDate } from './date-utils';
 import { escapeCSVValue } from './csv-parser';
+import { downloadBlob } from './download';
 
 export interface CSVExportOptions {
 	dateFormat?: string;
@@ -83,10 +84,5 @@ export function exportToCSV(data: GanttData, options: CSVExportOptions = {}): st
 export function downloadCSV(data: GanttData, filename = 'gantt-chart.csv'): void {
 	const csv = exportToCSV(data);
 	const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = filename;
-	a.click();
-	URL.revokeObjectURL(url);
+	downloadBlob(blob, filename);
 }

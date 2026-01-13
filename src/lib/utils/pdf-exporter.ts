@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { captureElementAsCanvas } from './export-utils';
 
 export interface PDFExportOptions {
 	orientation?: 'landscape' | 'portrait';
@@ -22,19 +22,11 @@ export async function exportToPDF(
 		scale = 2
 	} = options;
 
-	// Capture the element as a canvas
-	const canvas = await html2canvas(element, {
-		scale,
-		useCORS: true,
-		logging: false,
-		backgroundColor: getComputedStyle(element).backgroundColor || '#ffffff'
-	});
-
+	const canvas = await captureElementAsCanvas(element, scale);
 	const imgData = canvas.toDataURL('image/png');
 	const imgWidth = canvas.width;
 	const imgHeight = canvas.height;
 
-	// Create PDF with appropriate dimensions
 	const pdf = new jsPDF({
 		orientation,
 		unit: 'px',
@@ -68,14 +60,7 @@ export async function exportGanttToPDF(
 		scale = 2
 	} = options;
 
-	// Capture the element as a canvas
-	const canvas = await html2canvas(element, {
-		scale,
-		useCORS: true,
-		logging: false,
-		backgroundColor: getComputedStyle(element).backgroundColor || '#ffffff'
-	});
-
+	const canvas = await captureElementAsCanvas(element, scale);
 	const imgData = canvas.toDataURL('image/png');
 
 	// A4 dimensions in points
