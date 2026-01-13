@@ -274,10 +274,10 @@ export class PersistenceStore {
 		this.currentProjectId = id;
 		this.saveProjectsList();
 
-		// Load new project data into gantt store
+		// Load new project data into gantt store (reset history to prevent cross-project undo)
 		const data = this.loadProjectData(id);
 		if (data && this.ganttStore) {
-			this.ganttStore.importData(deserializeGanttData(data.current));
+			this.ganttStore.importData(deserializeGanttData(data.current), true);
 			this.lastAutoSnapshot = this.findLastAutoSnapshotTime(data.versions);
 			this.dataHash = this.computeHash(data.current);
 		}

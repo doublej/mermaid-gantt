@@ -645,9 +645,13 @@ export class GanttStore {
 	}
 
 	// Import/Export
-	importData(data: GanttData): void {
+	importData(data: GanttData, resetHistory: boolean = false): void {
 		this.data = data;
 		this.view = defaultViewState(data.tasks[0]?.id ?? null);
+		if (resetHistory) {
+			this.history = [];
+			this.historyIndex = -1;
+		}
 		this.saveHistory('Import data');
 	}
 

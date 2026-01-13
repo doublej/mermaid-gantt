@@ -10,6 +10,10 @@
 	const onboarding = getOnboardingContext();
 	const persistence = getPersistenceContext();
 
+	// Pending delete confirmation
+	let pendingDeleteId = $state<string | null>(null);
+	let pendingDeleteTitle = $state<string>('');
+
 	// Listen for programmatic action dispatch (e.g., from CommandPalette)
 	onMount(() => {
 		const handleActionEvent = (e: Event) => {
@@ -87,8 +91,11 @@
 				return true;
 			case 'deleteTask':
 				if (gantt.view.focusedTaskId) {
-					// TODO: Add confirmation dialog
-					gantt.deleteTask(gantt.view.focusedTaskId);
+					const task = gantt.data.tasks.find(t => t.id === gantt.view.focusedTaskId);
+					if (task) {
+						pendingDeleteId = task.id;
+						pendingDeleteTitle = task.title;
+					}
 				}
 				return true;
 			case 'copyTask':
@@ -103,6 +110,24 @@
 				if (gantt.view.focusedTaskId) {
 					gantt.duplicateTask(gantt.view.focusedTaskId);
 				}
+				return true;
+			case 'indentTask':
+				if (gantt.view.focusedTaskId) {
+					gantt.indentTask(gantt.view.focusedTaskId);
+				}
+				return true;
+			case 'outdentTask':
+				if (gantt.view.focusedTaskId) {
+					gantt.outdentTask(gantt.view.focusedTaskId);
+				}
+				return true;
+			case 'toggleMilestone':
+				if (gantt.view.focusedTaskId) {
+					gantt.toggleMilestone(gantt.view.focusedTaskId);
+				}
+				return true;
+			case 'selectAll':
+				gantt.selectAll();
 				return true;
 
 			// Timeline
@@ -159,6 +184,9 @@
 			case 'openImport':
 				keyboard.openImport();
 				return true;
+			case 'openSmartImport':
+				keyboard.openSmartImport();
+				return true;
 			case 'undo':
 				gantt.undo();
 				return true;
@@ -182,10 +210,81 @@
 				gantt.view.selectedTaskId = null;
 				return true;
 
+			// Page-level actions (dispatch event for page to handle)
+			case 'switchGanttView':
+			case 'switchTableView':
+			case 'exportPdf':
+			case 'exportPng':
+			case 'fitAll':
+				document.dispatchEvent(new CustomEvent('gantt:action', { detail: { action }, bubbles: true }));
+				return true;
+
 			default:
 				return false;
+		}
+	}
+
+	function confirmDelete(): void {
+		if (pendingDeleteId) {
+			gantt.deleteTask(pendingDeleteId);
+			pendingDeleteId = null;
+			pendingDeleteTitle = '';
+		}
+	}
+
+	function cancelDelete(): void {
+		pendingDeleteId = null;
+		pendingDeleteTitle = '';
+	}
+
+	function handleDeleteDialogKeydown(event: KeyboardEvent): void {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			confirmDelete();
+		} else if (event.key === 'Escape') {
+			event.preventDefault();
+			cancelDelete();
 		}
 	}
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
+
+{#if pendingDeleteId}
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div
+		class="modal-backdrop flex items-center justify-center"
+		onclick={cancelDelete}
+		onkeydown={handleDeleteDialogKeydown}
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="delete-dialog-title"
+		tabindex="-1"
+	>
+		<div
+			class="bg-surface rounded-xl shadow-2xl border border-default p-6 max-w-sm w-full mx-4"
+			onclick={(e) => e.stopPropagation()}
+		>
+			<h2 id="delete-dialog-title" class="text-lg font-semibold text-primary mb-2">
+				Delete Task
+			</h2>
+			<p class="text-secondary mb-6">
+				Are you sure you want to delete "<span class="font-medium text-primary">{pendingDeleteTitle}</span>"? This action cannot be undone.
+			</p>
+			<div class="flex gap-3 justify-end">
+				<button
+					class="px-4 py-2 text-sm font-medium rounded-lg bg-surface-elevated hover:bg-surface-hover text-secondary transition-colors"
+					onclick={cancelDelete}
+				>
+					Cancel
+				</button>
+				<button
+					class="px-4 py-2 text-sm font-medium rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors"
+					onclick={confirmDelete}
+				>
+					Delete
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

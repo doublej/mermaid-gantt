@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Task, MenuItem } from '$lib/types';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
+	import { Pencil, Copy, Trash2, Circle, Palette } from '@lucide/svelte';
 
 	interface Props {
 		task: Task;
@@ -38,11 +39,18 @@
 		}
 	});
 
+	// Multi-select tasks get consistent accent border; selected task in multi-select gets bolder
 	const strokeColor = $derived(
-		isSelected ? 'var(--color-accent-hover)' : isInMultiSelect ? 'var(--color-accent)' : isFocused ? 'var(--color-accent)' : 'transparent'
+		isInMultiSelect
+			? (isSelected ? 'var(--color-accent-hover)' : 'var(--color-accent)')
+			: (isSelected ? 'var(--color-accent-hover)' : isFocused ? 'var(--color-accent)' : 'transparent')
 	);
 
-	const strokeWidth = $derived(isSelected ? 3 : isInMultiSelect ? 2 : isFocused ? 2 : 0);
+	const strokeWidth = $derived(
+		isInMultiSelect
+			? (isSelected ? 3 : 2)
+			: (isSelected ? 3 : isFocused ? 2 : 0)
+	);
 
 	// Milestone is rendered as diamond (use isMilestone property or milestone status)
 	const isMilestone = $derived(task.isMilestone || task.status === 'milestone');
@@ -141,30 +149,30 @@
 		gantt.view.selectedTaskId = task.id;
 
 		if (onContextMenu) {
-			const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+			const colorOptions = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
 			const items: MenuItem[] = [
 				{
 					label: 'Edit',
-					icon: '✎',
+					icon: Pencil,
 					action: () => (gantt.view.editingTaskId = task.id)
 				},
 				{
 					label: 'Duplicate',
-					icon: '⋰',
+					icon: Copy,
 					action: () => gantt.duplicateTask(task.id)
 				},
 				{ divider: true },
 				{
 					label: 'Set Color',
-					icon: '●',
+					icon: Palette,
 					submenu: [
 						{
 							label: 'None',
 							action: () => gantt.updateTask(task.id, { color: null })
 						},
-						...colors.map((color) => ({
+						...colorOptions.map((color) => ({
 							label: '',
-							icon: '●',
+							icon: Circle,
 							iconColor: color,
 							action: () => gantt.updateTask(task.id, { color })
 						}))
@@ -173,7 +181,7 @@
 				{ divider: true },
 				{
 					label: 'Delete',
-					icon: '🗑',
+					icon: Trash2,
 					action: () => gantt.deleteTask(task.id)
 				}
 			];
