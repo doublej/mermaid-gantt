@@ -23,6 +23,51 @@
 		loadingKey++;
 	}
 
+	// Force animations to play despite reduced-motion preference (for demo purposes)
+	// Inject a style tag that overrides the global reduced-motion rule for demo elements
+	$effect(() => {
+		const styleId = 'brand-animations-override';
+		let style = document.getElementById(styleId) as HTMLStyleElement | null;
+
+		if (activeSection === 'motion') {
+			if (!style) {
+				style = document.createElement('style');
+				style.id = styleId;
+				style.textContent = `
+					.guidelines .loader-spinner {
+						animation: spin 1s linear infinite !important;
+					}
+					.guidelines .loader-pulse {
+						animation: pulse 1.5s ease-in-out infinite !important;
+					}
+					.guidelines .loader-bar::after {
+						animation: progressGrow 2s linear infinite !important;
+					}
+					.guidelines .modal-backdrop {
+						animation: backdropFade 200ms cubic-bezier(0, 0, 0.2, 1) forwards !important;
+					}
+					.guidelines .modal-content {
+						animation: modalEntry 200ms cubic-bezier(0, 0, 0.2, 1) forwards !important;
+					}
+					.guidelines .task-bar-demo {
+						animation: taskDrag 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+					}
+					.guidelines .stagger-item {
+						animation: staggerIn 200ms cubic-bezier(0, 0, 0.2, 1) backwards !important;
+					}
+					.guidelines .duration-bar {
+						animation: durationPulse 2s ease-in-out infinite !important;
+					}
+				`;
+				document.head.appendChild(style);
+			}
+		}
+
+		return () => {
+			style?.remove();
+		};
+	});
+
 	const sections = [
 		{ id: 'logo', label: '01 Logo' },
 		{ id: 'construction', label: '02 Construction' },
@@ -59,6 +104,21 @@
 	</nav>
 
 	<main class="content">
+	<!-- Intro Header -->
+	<header class="intro-header">
+		<h1>Mermaid Gantt Brand Guidelines</h1>
+		<p>
+			This guide defines visual identity standards for Mermaid Gantt. Use it to maintain
+			consistency across all touchpoints—from UI components to marketing materials.
+		</p>
+		<a href="/llm.txt" class="llm-link" target="_blank">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+			</svg>
+			LLM Reference (llm.txt)
+		</a>
+	</header>
+
 	<!-- Logo Overview -->
 	{#if activeSection === 'logo'}
 	<section class="section" id="logo">
@@ -1180,9 +1240,9 @@
 			<div class="reduced-motion-code">
 				<pre><code>@media (prefers-reduced-motion: reduce) &#123;
   *, *::before, *::after &#123;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   &#125;
 &#125;</code></pre>
 			</div>
@@ -1290,6 +1350,55 @@
 		padding: 2rem 3rem;
 		max-width: 800px;
 		overflow-y: auto;
+	}
+
+	/* Intro Header */
+	.intro-header {
+		margin-bottom: 2rem;
+		padding-bottom: 1.5rem;
+		border-bottom: 1px solid #e2e8f0;
+	}
+
+	.intro-header h1 {
+		font-size: 1.5rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		margin: 0 0 0.5rem;
+		color: #0f172a;
+	}
+
+	.intro-header p {
+		font-size: 0.9rem;
+		color: #64748b;
+		margin: 0 0 1rem;
+		max-width: 500px;
+		line-height: 1.5;
+	}
+
+	.llm-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.875rem;
+		background: #f0f9ff;
+		border: 1px solid #bae6fd;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: #0284c7;
+		text-decoration: none;
+		transition: all 100ms cubic-bezier(0, 0, 0.2, 1);
+	}
+
+	.llm-link:hover {
+		background: #e0f2fe;
+		border-color: #7dd3fc;
+		color: #0369a1;
+	}
+
+	.llm-link svg {
+		width: 16px;
+		height: 16px;
 	}
 
 	/* Sections */
@@ -1569,9 +1678,9 @@
 	}
 
 	.type-meta {
-		font-size: 0.75rem !important;
-		color: #94a3b8 !important;
-		margin-top: 0.75rem !important;
+		font-size: 0.75rem;
+		color: #94a3b8;
+		margin-top: 0.75rem;
 	}
 
 	.type-sample code {
@@ -2764,7 +2873,7 @@
 		position: absolute;
 		inset: 0;
 		background: rgba(15, 23, 42, 0.5);
-		animation: -global-backdropFade 300ms cubic-bezier(0, 0, 0.2, 1) forwards;
+		animation: -global-backdropFade 200ms cubic-bezier(0, 0, 0.2, 1) forwards;
 	}
 
 	@keyframes -global-backdropFade {
@@ -2782,13 +2891,13 @@
 		border-radius: 12px;
 		overflow: hidden;
 		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-		animation: -global-modalEntry 350ms cubic-bezier(0, 0, 0.2, 1) forwards;
+		animation: -global-modalEntry 200ms cubic-bezier(0, 0, 0.2, 1) forwards;
 	}
 
 	@keyframes -global-modalEntry {
 		from {
 			opacity: 0;
-			transform: translate(-50%, -50%) scale(0.85);
+			transform: translate(-50%, -50%) scale(0.95);
 		}
 		to {
 			opacity: 1;
@@ -2874,8 +2983,8 @@
 		border-radius: 8px;
 		font-size: 0.85rem;
 		color: #0f172a;
-		animation: -global-staggerIn 350ms cubic-bezier(0, 0, 0.2, 1) backwards;
-		animation-delay: calc(var(--i) * 80ms);
+		animation: -global-staggerIn 200ms cubic-bezier(0, 0, 0.2, 1) backwards;
+		animation-delay: calc(var(--i) * 50ms);
 	}
 
 	@keyframes -global-staggerIn {

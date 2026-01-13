@@ -3,7 +3,7 @@ import type { KeyBinding, KeyCategory, KeyModifier } from '$lib/types';
 
 const KEYBOARD_CONTEXT = Symbol('keyboard');
 
-export type KeyboardMode = 'normal' | 'editing' | 'command-palette' | 'help';
+export type KeyboardMode = 'normal' | 'editing' | 'command-palette' | 'help' | 'smart-import';
 
 // All keyboard bindings
 export const keyBindings: KeyBinding[] = [
@@ -54,6 +54,8 @@ export const keyBindings: KeyBinding[] = [
 	{ key: 'S', modifiers: ['ctrl'], action: 'openExport', description: 'Export', category: 'global' },
 	{ key: 'o', modifiers: ['ctrl'], action: 'openImport', description: 'Import', category: 'global' },
 	{ key: 'O', modifiers: ['ctrl'], action: 'openImport', description: 'Import', category: 'global' },
+	{ key: 'i', modifiers: ['ctrl', 'shift'], action: 'openSmartImport', description: 'Smart import', category: 'global' },
+	{ key: 'I', modifiers: ['ctrl', 'shift'], action: 'openSmartImport', description: 'Smart import', category: 'global' },
 	{ key: 'z', modifiers: ['ctrl'], action: 'undo', description: 'Undo', category: 'global' },
 	{ key: 'Z', modifiers: ['ctrl'], action: 'undo', description: 'Undo', category: 'global' },
 	{ key: 'z', modifiers: ['ctrl', 'shift'], action: 'redo', description: 'Redo', category: 'global' },
@@ -87,7 +89,9 @@ export class KeyboardStore {
 	showCommandPalette = $state(false);
 	showHelp = $state(false);
 	showImportExport = $state(false);
+	showSmartImport = $state(false);
 	importExportMode = $state<'import' | 'export'>('export');
+	smartImportInitialText = $state<string | null>(null);
 
 	// Grouped bindings for display
 	bindingsByCategory = $derived(
@@ -174,10 +178,19 @@ export class KeyboardStore {
 		this.importExportMode = 'export';
 	}
 
+	openSmartImport(initialText: string | null = null): void {
+		this.closeAllModals();
+		this.showSmartImport = true;
+		this.smartImportInitialText = initialText;
+		this.mode = 'smart-import';
+	}
+
 	closeAllModals(): void {
 		this.showCommandPalette = false;
 		this.showHelp = false;
 		this.showImportExport = false;
+		this.showSmartImport = false;
+		this.smartImportInitialText = null;
 		this.mode = 'normal';
 	}
 

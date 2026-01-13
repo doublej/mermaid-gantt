@@ -6,9 +6,6 @@
 	}
 
 	let { size = 24, showText = false, class: className = '' }: Props = $props();
-
-	// Scale stroke proportionally (2px at size 24)
-	const strokeWidth = $derived(Math.max(1.5, size / 12));
 </script>
 
 <span class="logo {className}" class:with-text={showText}>
@@ -20,26 +17,15 @@
 		aria-hidden="true"
 		class="logo-icon"
 	>
-		<!-- Horizontal bar (Gantt task) - 4:1 ratio -->
-		<rect
-			x="2"
-			y="10"
-			width="16"
-			height="4"
-			rx="2"
-			fill="currentColor"
-		/>
-		<!-- Vertical caret (cursor) - positioned 10% from left -->
-		<line
-			x1="4"
-			y1="6"
-			x2="4"
-			y2="18"
-			stroke="currentColor"
-			stroke-width={strokeWidth}
-			stroke-linecap="round"
-			class="caret"
-		/>
+		<!-- Brand logo: 3 stacked bars + anchor node (golden ratio proportions) -->
+		<!-- Bar 1: full width -->
+		<rect x="5" y="6" width="15" height="4" rx="1" fill="currentColor" />
+		<!-- Bar 2: offset, slightly narrower (55% opacity) -->
+		<rect x="7" y="10" width="13" height="4" rx="1" fill="currentColor" opacity="0.55" />
+		<!-- Bar 3: short bar (30% opacity) -->
+		<rect x="5" y="14" width="8" height="4" rx="1" fill="currentColor" opacity="0.3" />
+		<!-- Anchor node (blinking) -->
+		<circle cx="5" cy="12" r="2" fill="currentColor" class="anchor" />
 	</svg>
 
 	{#if showText}
@@ -59,7 +45,7 @@
 		flex-shrink: 0;
 	}
 
-	.caret {
+	.anchor {
 		animation: blink 1.06s step-end infinite;
 	}
 
@@ -69,7 +55,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.caret {
+		.anchor {
 			animation: none;
 		}
 	}
