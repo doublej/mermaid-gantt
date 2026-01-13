@@ -19,13 +19,10 @@ interface ParseContext {
 	tasksByAlias: Map<string, Task>;
 }
 
+const STATUS_MAP: Record<string, TaskStatus> = { active: 'active', done: 'done', crit: 'crit', milestone: 'milestone' };
+
 function parseStatus(statusStr: string): TaskStatus {
-	const normalized = statusStr.toLowerCase().trim();
-	if (normalized === 'active') return 'active';
-	if (normalized === 'done') return 'done';
-	if (normalized === 'crit') return 'crit';
-	if (normalized === 'milestone') return 'milestone';
-	return null;
+	return STATUS_MAP[statusStr.toLowerCase().trim()] ?? null;
 }
 
 function parseTaskLine(line: string, ctx: ParseContext): void {

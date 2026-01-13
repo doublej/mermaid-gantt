@@ -137,23 +137,7 @@ export class KeyboardStore {
 
 	// Format key for display
 	formatKey(binding: KeyBinding): string {
-		const parts: string[] = [];
-
-		if (binding.modifiers.includes('ctrl')) {
-			parts.push(isMac() ? '⌘' : 'Ctrl');
-		}
-		if (binding.modifiers.includes('shift')) {
-			parts.push(isMac() ? '⇧' : 'Shift');
-		}
-		if (binding.modifiers.includes('alt')) {
-			parts.push(isMac() ? '⌥' : 'Alt');
-		}
-
-		// Format special keys
-		const keyDisplay = formatKeyDisplay(binding.key);
-		parts.push(keyDisplay);
-
-		return parts.join(isMac() ? '' : '+');
+		return formatKeyParts(binding).join(isMac() ? '' : '+');
 	}
 
 	// Open/close modals

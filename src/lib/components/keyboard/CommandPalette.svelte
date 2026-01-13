@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
-	import { getKeyboardContext, getUniqueBindings } from '$lib/stores/keyboard-store.svelte';
+	import { getKeyboardContext, getUniqueBindings, formatKeyParts, getKeyWidthClass } from '$lib/stores/keyboard-store.svelte';
 	import { getOnboardingContext } from '$lib/stores/onboarding-store.svelte';
 	import type { Command } from '$lib/types';
 
@@ -14,32 +14,29 @@
 
 	// Build command list from bindings
 	const commands = $derived.by(() => {
-		const bindings = getUniqueBindings();
-		const cmds: Command[] = bindings.map((binding) => ({
+		const cmds: Command[] = getUniqueBindings().map((binding) => ({
 			id: binding.action,
 			title: binding.description,
-			keys: [keyboard.formatKey(binding)],
+			keys: formatKeyParts(binding),
 			action: () => executeAction(binding.action),
 			category: binding.category
 		}));
 
 		// Add extra commands
-		cmds.push({
-			id: 'resetTutorial',
-			title: 'Restart Tutorial',
-			action: () => {
-				onboarding.resetTutorial();
-				onboarding.startTutorial();
+		cmds.push(
+			{
+				id: 'resetTutorial',
+				title: 'Restart Tutorial',
+				action: () => { onboarding.resetTutorial(); onboarding.startTutorial(); },
+				category: 'help'
 			},
-			category: 'help'
-		});
-
-		cmds.push({
-			id: 'toggleHints',
-			title: onboarding.showHints ? 'Hide Keyboard Hints' : 'Show Keyboard Hints',
-			action: () => onboarding.toggleHints(),
-			category: 'help'
-		});
+			{
+				id: 'toggleHints',
+				title: onboarding.showHints ? 'Hide Keyboard Hints' : 'Show Keyboard Hints',
+				action: () => onboarding.toggleHints(),
+				category: 'help'
+			}
+		);
 
 		return cmds;
 	});
@@ -89,27 +86,10 @@
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'ArrowDown':
-				event.preventDefault();
-				selectedIndex = Math.min(selectedIndex + 1, filteredCommands.length - 1);
-				break;
-			case 'ArrowUp':
-				event.preventDefault();
-				selectedIndex = Math.max(selectedIndex - 1, 0);
-				break;
-			case 'Enter':
-				event.preventDefault();
-				const cmd = filteredCommands[selectedIndex];
-				if (cmd) {
-					cmd.action();
-				}
-				break;
-			case 'Escape':
-				event.preventDefault();
-				close();
-				break;
-		}
+		if (event.key === 'Escape') { event.preventDefault(); close(); return; }
+		if (event.key === 'ArrowDown') { event.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, filteredCommands.length - 1); return; }
+		if (event.key === 'ArrowUp') { event.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, 0); return; }
+		if (event.key === 'Enter') { event.preventDefault(); filteredCommands[selectedIndex]?.action(); }
 	}
 
 	function close() {
@@ -154,7 +134,7 @@
 					placeholder="Type a command or search..."
 					class="flex-1 px-3 py-4 text-base outline-none bg-transparent text-primary"
 				/>
-				<kbd class="kbd kbd-sm">Esc</kbd>
+				<kbd class="kbd kbd-sm kbd-medium">Esc</kbd>
 			</div>
 
 			<!-- Command list -->
@@ -176,7 +156,7 @@
 								{#if cmd.keys}
 									<span class="flex gap-1">
 										{#each cmd.keys as key}
-											<kbd class="kbd kbd-sm">{key}</kbd>
+											<kbd class="kbd kbd-sm {getKeyWidthClass(key)}">{key}</kbd>
 										{/each}
 									</span>
 								{/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import { Circle, ChevronRight } from '@lucide/svelte';
 	import type { MenuItem } from '$lib/types';
 
 	interface Props {
@@ -43,33 +44,12 @@
 	});
 
 	function handleKeyDown(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'Escape':
-				onClose();
-				break;
-			case 'ArrowDown':
-				event.preventDefault();
-				selectNext();
-				break;
-			case 'ArrowUp':
-				event.preventDefault();
-				selectPrevious();
-				break;
-			case 'ArrowRight':
-				event.preventDefault();
-				if (getSelectableItems()[selectedIndex]?.submenu) {
-					expandedSubmenu = selectedIndex;
-				}
-				break;
-			case 'ArrowLeft':
-				event.preventDefault();
-				expandedSubmenu = null;
-				break;
-			case 'Enter':
-				event.preventDefault();
-				executeSelected();
-				break;
-		}
+		if (event.key === 'Escape') { onClose(); return; }
+		if (event.key === 'ArrowDown') { event.preventDefault(); moveSelection(1); return; }
+		if (event.key === 'ArrowUp') { event.preventDefault(); moveSelection(-1); return; }
+		if (event.key === 'ArrowRight') { event.preventDefault(); if (getSelectableItems()[selectedIndex]?.submenu) expandedSubmenu = selectedIndex; return; }
+		if (event.key === 'ArrowLeft') { event.preventDefault(); expandedSubmenu = null; return; }
+		if (event.key === 'Enter') { event.preventDefault(); executeSelected(); }
 	}
 
 	function handleClickOutside(event: MouseEvent) {
@@ -83,19 +63,12 @@
 		return items.filter((item) => !item.divider && !item.disabled);
 	}
 
-	function selectNext() {
-		const selectableItems = getSelectableItems();
-		const currentSelectableIndex = selectableItems.findIndex((item) => item === items[selectedIndex]);
-		if (currentSelectableIndex < selectableItems.length - 1) {
-			selectedIndex = items.indexOf(selectableItems[currentSelectableIndex + 1]);
-		}
-	}
-
-	function selectPrevious() {
-		const selectableItems = getSelectableItems();
-		const currentSelectableIndex = selectableItems.findIndex((item) => item === items[selectedIndex]);
-		if (currentSelectableIndex > 0) {
-			selectedIndex = items.indexOf(selectableItems[currentSelectableIndex - 1]);
+	function moveSelection(delta: 1 | -1): void {
+		const selectable = getSelectableItems();
+		const currentIdx = selectable.findIndex((item) => item === items[selectedIndex]);
+		const nextIdx = currentIdx + delta;
+		if (nextIdx >= 0 && nextIdx < selectable.length) {
+			selectedIndex = items.indexOf(selectable[nextIdx]);
 		}
 	}
 
@@ -139,11 +112,16 @@
 				disabled={item.disabled}
 			>
 				{#if item.icon}
-					<span class="menu-icon" style:color={item.iconColor}>{item.icon}</span>
+					{@const IconComponent = item.icon}
+					<span class="menu-icon" style:color={item.iconColor}>
+						<IconComponent size={14} />
+					</span>
 				{/if}
 				<span class="menu-label">{item.label}</span>
 				{#if item.submenu}
-					<span class="menu-arrow">→</span>
+					<span class="menu-arrow">
+						<ChevronRight size={14} />
+					</span>
 				{/if}
 			</button>
 
@@ -160,7 +138,10 @@
 								disabled={subitem.disabled}
 							>
 								{#if subitem.icon}
-									<span class="menu-icon" style:color={subitem.iconColor}>{subitem.icon}</span>
+									{@const SubIconComponent = subitem.icon}
+									<span class="menu-icon" style:color={subitem.iconColor}>
+										<SubIconComponent size={14} />
+									</span>
 								{/if}
 								<span class="menu-label">{subitem.label}</span>
 							</button>

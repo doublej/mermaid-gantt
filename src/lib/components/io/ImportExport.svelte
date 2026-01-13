@@ -45,12 +45,8 @@
 	let copied = $state(false);
 	let exporting = $state<'pdf' | 'png' | null>(null);
 
-	const exportText = $derived(() => {
-		if (exportFormat === 'mermaid') return exportToMermaid(gantt.data);
-		if (exportFormat === 'json') return exportToJson(gantt.data);
-		if (exportFormat === 'csv') return exportToCSV(gantt.data, { includeBOM: false });
-		return '';
-	});
+	const EXPORTERS = { mermaid: () => exportToMermaid(gantt.data), json: () => exportToJson(gantt.data), csv: () => exportToCSV(gantt.data, { includeBOM: false }) };
+	const exportText = $derived(() => EXPORTERS[exportFormat]?.() ?? '');
 
 	function close() {
 		importText = '';
@@ -136,39 +132,15 @@
 		downloadBlob(blob, `gantt-chart.${exportFormat === 'mermaid' ? 'mmd' : 'json'}`);
 	}
 
-	async function handlePDFExport() {
-		if (!ganttElement) {
-			importError = 'Gantt chart element not available';
-			return;
-		}
-
-		exporting = 'pdf';
+	async function handleImageExport(type: 'pdf' | 'png') {
+		if (!ganttElement) { importError = 'Gantt chart element not available'; return; }
+		exporting = type;
 		try {
-			await exportToPDF(ganttElement, {
-				orientation: 'landscape',
-				filename: `${gantt.data.config.title || 'gantt-chart'}.pdf`
-			});
+			const filename = `${gantt.data.config.title || 'gantt-chart'}.${type}`;
+			if (type === 'pdf') await exportToPDF(ganttElement, { orientation: 'landscape', filename });
+			else await exportToPNG(ganttElement, { scale: 2, filename });
 		} catch (err) {
-			importError = err instanceof Error ? err.message : 'Failed to export PDF';
-		} finally {
-			exporting = null;
-		}
-	}
-
-	async function handlePNGExport() {
-		if (!ganttElement) {
-			importError = 'Gantt chart element not available';
-			return;
-		}
-
-		exporting = 'png';
-		try {
-			await exportToPNG(ganttElement, {
-				scale: 2,
-				filename: `${gantt.data.config.title || 'gantt-chart'}.png`
-			});
-		} catch (err) {
-			importError = err instanceof Error ? err.message : 'Failed to export PNG';
+			importError = err instanceof Error ? err.message : `Failed to export ${type.toUpperCase()}`;
 		} finally {
 			exporting = null;
 		}
@@ -350,7 +322,7 @@
 								<h4 class="format-label">Image Export</h4>
 								<div class="export-buttons">
 									<button
-										onclick={handlePDFExport}
+										onclick={() => handleImageExport('pdf')}
 										class="export-btn"
 										disabled={!ganttElement || exporting !== null}
 									>
@@ -360,7 +332,7 @@
 										<span>{exporting === 'pdf' ? 'Exporting...' : 'Export PDF'}</span>
 									</button>
 									<button
-										onclick={handlePNGExport}
+										onclick={() => handleImageExport('png')}
 										class="export-btn"
 										disabled={!ganttElement || exporting !== null}
 									>

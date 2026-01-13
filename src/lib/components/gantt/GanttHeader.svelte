@@ -23,17 +23,8 @@
 			const dayOfWeek = date.getDay();
 			const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-			let label: string;
-			if (zoomLevel >= 3) {
-				// Month/Quarter view
-				label = date.toLocaleDateString('en-US', { month: 'short' });
-			} else if (zoomLevel >= 1) {
-				// Week view
-				label = `W${getWeekNumber(date)}`;
-			} else {
-				// Day view
-				label = date.getDate().toString();
-			}
+			const label = zoomLevel >= 3 ? date.toLocaleDateString('en-US', { month: 'short' })
+				: zoomLevel >= 1 ? `W${getWeekNumber(date)}` : date.getDate().toString();
 
 			result.push({
 				date,

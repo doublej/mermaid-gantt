@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getOnboardingContext, tutorialSteps } from '$lib/stores/onboarding-store.svelte';
+	import { getKeyWidthClass } from '$lib/stores/keyboard-store.svelte';
 
 	const onboarding = getOnboardingContext();
 
@@ -136,7 +137,7 @@
 					<div class="keys-display">
 						{#each onboarding.currentStep.keys as key, i}
 							<div
-								class="key-badge"
+								class="key-badge {getKeyWidthClass(key)}"
 								class:pressed={pressedKeys.includes(key)}
 							>
 								{key}
@@ -221,20 +222,36 @@
 		padding: 0 0.5rem;
 		font-size: 0.875rem;
 		font-weight: 500;
-		background-color: var(--color-surface);
-		color: var(--color-text);
-		border: 2px solid var(--color-border);
-		border-radius: 0.375rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		font-family: var(--font-family-mono);
+		color: var(--color-text-secondary);
+		/* MacBook-style keycap */
+		background: linear-gradient(
+			to bottom,
+			var(--color-surface) 0%,
+			color-mix(in srgb, var(--color-surface) 92%, black) 100%
+		);
+		border: 1px solid var(--color-border);
+		border-bottom-width: 3px;
+		border-radius: 0.5rem;
+		box-shadow:
+			0 1px 0 var(--color-border),
+			0 3px 5px rgba(0, 0, 0, 0.1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.15);
 		transition: all 0.075s ease;
 	}
 
+	/* Key width modifiers - larger MacBook proportions for tutorial */
+	.key-badge:global(.kbd-wide) { min-width: 4rem; }
+	.key-badge:global(.kbd-medium) { min-width: 3.25rem; }
+	.key-badge:global(.kbd-narrow) { min-width: 2.5rem; }
+	.key-badge:global(.kbd-space) { min-width: 6rem; }
+
 	.key-badge.pressed {
-		background-color: var(--color-accent);
+		background: var(--color-accent);
 		color: white;
 		border-color: var(--color-accent-hover);
 		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-		transform: translateY(2px);
+		transform: translateY(3px);
 	}
 
 	.tutorial-footer {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getOnboardingContext } from '$lib/stores/onboarding-store.svelte';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
+	import { getKeyWidthClass } from '$lib/stores/keyboard-store.svelte';
 
 	const onboarding = getOnboardingContext();
 	const gantt = getGanttContext();
@@ -51,7 +52,7 @@
 			{#if i > 0}
 				<span class="hint-separator">+</span>
 			{/if}
-			<kbd class="hint-key">{key}</kbd>
+			<kbd class="hint-key {getKeyWidthClass(key)}">{key}</kbd>
 		{/each}
 		<span class="hint-text">{hint.suffix}</span>
 
@@ -60,7 +61,7 @@
 				{#if i > 0}
 					<span class="hint-separator">+</span>
 				{/if}
-				<kbd class="hint-key">{key}</kbd>
+				<kbd class="hint-key {getKeyWidthClass(key)}">{key}</kbd>
 			{/each}
 			<span class="hint-text">{hint.suffix2}</span>
 		{/if}
@@ -113,11 +114,27 @@
 		font-size: 0.75rem;
 		font-weight: 500;
 		font-family: var(--font-family-mono);
-		background-color: var(--color-surface-elevated);
-		color: var(--color-text);
+		color: var(--color-text-secondary);
+		/* MacBook-style keycap */
+		background: linear-gradient(
+			to bottom,
+			var(--color-surface-elevated) 0%,
+			color-mix(in srgb, var(--color-surface-elevated) 92%, black) 100%
+		);
 		border: 1px solid var(--color-border);
-		border-radius: 0.25rem;
+		border-bottom-width: 2px;
+		border-radius: 0.375rem;
+		box-shadow:
+			0 1px 0 var(--color-border),
+			0 2px 3px rgba(0, 0, 0, 0.08),
+			inset 0 1px 0 rgba(255, 255, 255, 0.1);
 	}
+
+	/* Key width modifiers - MacBook proportions */
+	.hint-key:global(.kbd-wide) { min-width: 2.5rem; }
+	.hint-key:global(.kbd-medium) { min-width: 2rem; }
+	.hint-key:global(.kbd-narrow) { min-width: 1.5rem; }
+	.hint-key:global(.kbd-space) { min-width: 4rem; }
 
 	.hint-close {
 		margin-left: 0.5rem;

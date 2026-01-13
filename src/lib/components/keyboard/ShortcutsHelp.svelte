@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getKeyboardContext } from '$lib/stores/keyboard-store.svelte';
+	import { getKeyboardContext, formatKeyParts, getKeyWidthClass } from '$lib/stores/keyboard-store.svelte';
 
 	const keyboard = getKeyboardContext();
 
@@ -60,7 +60,11 @@
 							{#each bindings as binding}
 								<div class="shortcut-row">
 									<span class="text-sm text-secondary">{binding.description}</span>
-									<kbd class="kbd">{keyboard.formatKey(binding)}</kbd>
+									<span class="flex gap-1">
+										{#each formatKeyParts(binding) as key}
+											<kbd class="kbd {getKeyWidthClass(key)}">{key}</kbd>
+										{/each}
+									</span>
 								</div>
 							{/each}
 						</div>
@@ -71,7 +75,7 @@
 			<!-- Footer -->
 			<div class="help-footer">
 				<p class="text-sm text-secondary">
-					Press <kbd class="kbd kbd-sm">Ctrl</kbd>+<kbd class="kbd kbd-sm">K</kbd> for command palette
+					Press <kbd class="kbd kbd-sm kbd-medium">Ctrl</kbd>+<kbd class="kbd kbd-sm kbd-narrow">K</kbd> for command palette
 				</p>
 				<button onclick={close} class="btn-primary">
 					Got it

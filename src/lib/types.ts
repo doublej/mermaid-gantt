@@ -163,7 +163,7 @@ export type SaveStatus = 'saved' | 'saving' | 'unsaved';
 // Context menu types
 export interface MenuItem {
 	label?: string;
-	icon?: string;
+	icon?: import('svelte').Component;
 	iconColor?: string; // hex color for icon
 	action?: () => void;
 	disabled?: boolean;

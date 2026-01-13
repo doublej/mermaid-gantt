@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { KeyboardLesson } from '$lib/data/keyboard-lessons';
+	import { getKeyWidthClass } from '$lib/stores/keyboard-store.svelte';
 
 	interface Props {
 		lesson: KeyboardLesson;
@@ -41,17 +42,7 @@
 
 	function handleKeyDown(e: KeyboardEvent): void {
 		e.preventDefault();
-
-		const key = normalizeKey(e.key);
-
-		// Add the key to pressed set
-		if (key === 'Ctrl' || key === 'Cmd' || key === 'Shift' || key === 'Alt') {
-			pressedKeys.add(key);
-		} else {
-			pressedKeys.add(key);
-		}
-
-		// Check if keys match
+		pressedKeys.add(normalizeKey(e.key));
 		checkMatch();
 	}
 
@@ -66,22 +57,14 @@
 		const expectedKeys = new Set(
 			lesson.keys.map((k) => (k === 'Ctrl' && isMac() ? 'Cmd' : k))
 		);
-		const actualKeys = new Set(pressedKeys);
 
-		if (expectedKeys.size === actualKeys.size) {
-			let allMatch = true;
-			for (const key of expectedKeys) {
-				if (!actualKeys.has(key)) {
-					allMatch = false;
-					break;
-				}
-			}
+		const allMatch = expectedKeys.size === pressedKeys.size &&
+			[...expectedKeys].every((k) => pressedKeys.has(k));
 
-			if (allMatch) {
-				matched = true;
-				pressedKeys.clear();
-				onMatch?.();
-			}
+		if (allMatch) {
+			matched = true;
+			pressedKeys.clear();
+			onMatch?.();
 		}
 	}
 
@@ -109,14 +92,12 @@
 
 <svelte:window onkeydown={handleKeyDown} onkeyup={handleKeyUp} />
 
-<div class="space-y-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+<div class="space-y-4 p-4 rounded-lg bg-surface-elevated">
 	<div>
-		<h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Keys to Press:</h3>
+		<h3 class="text-sm font-semibold text-secondary mb-2">Keys to Press:</h3>
 		<div class="flex gap-1 flex-wrap">
 			{#each getExpectedKeysDisplay() as key (key)}
-				<kbd
-					class="px-3 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm font-mono"
-				>
+				<kbd class="kbd {getKeyWidthClass(key)}" style="height: 2rem; font-size: 0.875rem;">
 					{key}
 				</kbd>
 			{/each}
@@ -124,19 +105,17 @@
 	</div>
 
 	<div class={`p-3 rounded transition-colors ${animationClass}`}>
-		<p class="text-sm text-gray-600 dark:text-gray-400">
+		<p class="text-sm text-secondary">
 			{lesson.instruction}
 		</p>
 	</div>
 
 	{#if getPressedKeysDisplay().length > 0}
 		<div>
-			<p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Keys you pressed:</p>
+			<p class="text-xs text-tertiary mb-1">Keys you pressed:</p>
 			<div class="flex gap-1 flex-wrap">
 				{#each getPressedKeysDisplay() as key (key)}
-					<kbd
-						class="px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 text-xs font-mono"
-					>
+					<kbd class="kbd kbd-sm {getKeyWidthClass(key)} pressed-key">
 						{key}
 					</kbd>
 				{/each}
@@ -145,8 +124,8 @@
 	{/if}
 
 	{#if matched}
-		<div class="text-sm text-green-600 dark:text-green-400 font-semibold">
-			✓ Correct! Moving to next lesson...
+		<div class="text-sm text-status-done font-semibold">
+			Correct! Moving to next lesson...
 		</div>
 	{/if}
 </div>
@@ -164,5 +143,15 @@
 
 	:global(.animate-pulse) {
 		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+	.pressed-key {
+		background: var(--color-accent-light) !important;
+		color: var(--color-accent) !important;
+		border-color: var(--color-accent) !important;
+	}
+
+	.text-status-done {
+		color: var(--color-status-done);
 	}
 </style>

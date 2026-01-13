@@ -7,6 +7,7 @@
 	import GanttTask from './GanttTask.svelte';
 	import GanttDependency from './GanttDependency.svelte';
 	import ContextMenu from '../ui/ContextMenu.svelte';
+	import { ZoomIn, ZoomOut, ChevronDown } from '@lucide/svelte';
 	import type { MenuItem } from '$lib/types';
 
 	const gantt = getGanttContext();
@@ -131,16 +132,6 @@
 		new Map(taskPositions.map((p) => [p.task.id, p]))
 	);
 
-	// Check if a task is visible (not hidden by collapsed parent)
-	function isTaskVisible(taskId: string): boolean {
-		let task = gantt.data.tasks.find(t => t.id === taskId);
-		while (task?.parentId) {
-			if (collapsedTasks.has(task.parentId)) return false;
-			task = gantt.data.tasks.find(t => t.id === task!.parentId);
-		}
-		return true;
-	}
-
 	// Check if a task has visible children
 	function hasChildren(taskId: string): boolean {
 		return gantt.getChildTasks(taskId).length > 0;
@@ -239,7 +230,7 @@
 				{@const level = gantt.getTaskLevel(task.id)}
 				{@const taskHasChildren = hasChildren(task.id)}
 				{@const isCollapsed = collapsedTasks.has(task.id)}
-				{#if isTaskVisible(task.id)}
+				{#if visibleTaskIds.has(task.id)}
 					<button
 						class="task-row"
 						class:focused={isFocused}
@@ -259,9 +250,7 @@
 								onclick={(e) => toggleCollapse(task.id, e)}
 								aria-label={isCollapsed ? 'Expand' : 'Collapse'}
 							>
-								<svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-								</svg>
+								<ChevronDown size={12} class="chevron-icon" />
 							</button>
 						{:else}
 							<span class="chevron-spacer"></span>
@@ -377,9 +366,7 @@
 		class="zoom-btn"
 		title="Zoom in"
 	>
-		<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-		</svg>
+		<ZoomIn size={16} />
 	</button>
 	<div class="zoom-levels">
 		{#each ZOOM_LEVELS as level, i}
@@ -398,9 +385,7 @@
 		class="zoom-btn"
 		title="Zoom out"
 	>
-		<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
-		</svg>
+		<ZoomOut size={16} />
 	</button>
 </div>
 </div>
@@ -517,11 +502,6 @@
 
 	.chevron-btn.collapsed {
 		transform: rotate(-90deg);
-	}
-
-	.chevron-icon {
-		width: 0.75rem;
-		height: 0.75rem;
 	}
 
 	.chevron-spacer {

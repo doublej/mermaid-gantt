@@ -24,6 +24,7 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "@lucide/svelte": "^0.562.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",
     "mermaid": "^11.12.2"

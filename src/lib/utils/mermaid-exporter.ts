@@ -2,10 +2,7 @@ import type { GanttData, Task, TaskStatus } from '$lib/types';
 import { formatDate, diffDays } from './date-utils';
 
 function formatStatus(status: TaskStatus, isMilestone: boolean): string {
-	// isMilestone flag takes precedence for milestone status
-	if (isMilestone) return 'milestone';
-	if (!status) return '';
-	return status;
+	return isMilestone ? 'milestone' : (status ?? '');
 }
 
 function formatTask(task: Task, taskAliases: Map<string, string>, dateFormat: string): string {

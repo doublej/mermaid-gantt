@@ -106,13 +106,8 @@
 		cleanupDragListeners();
 		const days = Math.round(previewDelta / dayWidth);
 		if (days !== 0) {
-			if (dragMode === 'move') {
-				gantt.moveTask(task.id, days);
-			} else if (dragMode === 'resize-start') {
-				gantt.moveTaskStart(task.id, days);
-			} else if (dragMode === 'resize-end') {
-				gantt.moveTaskEnd(task.id, days);
-			}
+			const actions = { move: gantt.moveTask, 'resize-start': gantt.moveTaskStart, 'resize-end': gantt.moveTaskEnd };
+			actions[dragMode as keyof typeof actions]?.call(gantt, task.id, days);
 		}
 		resetDragState();
 	}

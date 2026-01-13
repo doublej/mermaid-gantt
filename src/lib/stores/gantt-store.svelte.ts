@@ -339,29 +339,16 @@ export class GanttStore {
 	}
 
 	// Navigation
-	focusNextTask(): void {
+	private focusTaskByOffset(offset: 1 | -1): void {
 		const tasks = this.allTasksFlat;
-		if (tasks.length === 0) {
-			this.view.focusedTaskId = null;
-			return;
-		}
-
+		if (tasks.length === 0) { this.view.focusedTaskId = null; return; }
 		const currentIdx = tasks.findIndex((t) => t.id === this.view.focusedTaskId);
-		const nextIdx = currentIdx === -1 ? 0 : Math.min(currentIdx + 1, tasks.length - 1);
-		this.view.focusedTaskId = tasks[nextIdx].id;
+		const newIdx = currentIdx === -1 ? 0 : Math.max(0, Math.min(tasks.length - 1, currentIdx + offset));
+		this.view.focusedTaskId = tasks[newIdx].id;
 	}
 
-	focusPreviousTask(): void {
-		const tasks = this.allTasksFlat;
-		if (tasks.length === 0) {
-			this.view.focusedTaskId = null;
-			return;
-		}
-
-		const currentIdx = tasks.findIndex((t) => t.id === this.view.focusedTaskId);
-		const prevIdx = currentIdx === -1 ? 0 : Math.max(currentIdx - 1, 0);
-		this.view.focusedTaskId = tasks[prevIdx].id;
-	}
+	focusNextTask(): void { this.focusTaskByOffset(1); }
+	focusPreviousTask(): void { this.focusTaskByOffset(-1); }
 
 	focusFirstTask(): void {
 		const tasks = this.allTasksFlat;

@@ -4,6 +4,10 @@
 	import DemoChart from '$lib/components/landing/DemoChart.svelte';
 	import TypewriterCode from '$lib/components/landing/TypewriterCode.svelte';
 	import { demoMermaidSyntax } from '$lib/data/demo-data';
+	import {
+		Moon, Sun, Zap, ArrowRight, Keyboard, Code, BarChart3, Lock,
+		Check, X, ArrowLeftRight
+	} from '@lucide/svelte';
 
 	const theme = getThemeContext();
 
@@ -51,23 +55,9 @@
 					aria-label="Toggle theme"
 				>
 					{#if theme.resolvedTheme === 'light'}
-						<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-							/>
-						</svg>
+						<Moon size={20} />
 					{:else}
-						<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-							/>
-						</svg>
+						<Sun size={20} />
 					{/if}
 				</button>
 				<a href="/editor" class="nav-cta">Open Editor</a>
@@ -92,14 +82,7 @@
 				</p>
 				<div class="hero-cta">
 					<a href="/editor" class="btn-primary">
-						<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M13 10V3L4 14h7v7l9-11h-7z"
-							/>
-						</svg>
+						<Zap size={18} />
 						Launch Editor
 					</a>
 					<a href="#code-visual" class="btn-secondary">See How It Works</a>
@@ -139,22 +122,7 @@
 					</div>
 				</div>
 				<div class="code-arrow">
-					<svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<!-- Left arrow -->
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="1.5"
-							d="M7 17l-4-4m0 0l4-4m-4 4h18"
-						/>
-						<!-- Right arrow -->
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="1.5"
-							d="M17 7l4 4m0 0l-4 4"
-						/>
-					</svg>
+					<ArrowLeftRight size={32} />
 				</div>
 				<div class="visual-panel">
 					<div class="panel-header">
@@ -208,24 +176,13 @@
 					<div class="feature-card">
 						<div class="feature-icon">
 							{#if feature.icon === 'keyboard'}
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-									<rect x="2" y="6" width="20" height="12" rx="2" />
-									<path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8" />
-								</svg>
+								<Keyboard size={24} strokeWidth={1.5} />
 							{:else if feature.icon === 'code'}
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-									<path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
-								</svg>
+								<Code size={24} strokeWidth={1.5} />
 							{:else if feature.icon === 'chart'}
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-									<rect x="3" y="3" width="18" height="18" rx="2" />
-									<path d="M3 9h18M9 21V9" />
-								</svg>
+								<BarChart3 size={24} strokeWidth={1.5} />
 							{:else}
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-									<rect x="3" y="11" width="18" height="11" rx="2" />
-									<path d="M7 11V7a5 5 0 0110 0v4" />
-								</svg>
+								<Lock size={24} strokeWidth={1.5} />
 							{/if}
 						</div>
 						<h3 class="feature-title">{feature.title}</h3>
@@ -277,7 +234,7 @@
 					<div class="table-row">
 						<div class="table-cell metric-cell">Signup Required</div>
 						<div class="table-cell value-cell highlight">
-							<span class="check-icon">✓</span> No
+							<span class="check-icon"><Check size={14} /></span> No
 						</div>
 						<div class="table-cell value-cell muted">Yes</div>
 						<div class="table-cell value-cell muted">Yes</div>
@@ -286,31 +243,31 @@
 					<div class="table-row">
 						<div class="table-cell metric-cell">Embeds in Docs</div>
 						<div class="table-cell value-cell highlight">
-							<span class="check-icon">✓</span>
+							<span class="check-icon"><Check size={14} /></span>
 						</div>
 						<div class="table-cell value-cell muted">
-							<span class="x-icon">✗</span>
+							<span class="x-icon"><X size={14} /></span>
 						</div>
 						<div class="table-cell value-cell muted">
-							<span class="x-icon">✗</span>
+							<span class="x-icon"><X size={14} /></span>
 						</div>
 						<div class="table-cell value-cell muted">
-							<span class="x-icon">✗</span>
+							<span class="x-icon"><X size={14} /></span>
 						</div>
 					</div>
 					<div class="table-row">
 						<div class="table-cell metric-cell">Version Control</div>
 						<div class="table-cell value-cell highlight">
-							<span class="check-icon">✓</span>
+							<span class="check-icon"><Check size={14} /></span>
 						</div>
 						<div class="table-cell value-cell muted">
-							<span class="x-icon">✗</span>
+							<span class="x-icon"><X size={14} /></span>
 						</div>
 						<div class="table-cell value-cell muted">
-							<span class="x-icon">✗</span>
+							<span class="x-icon"><X size={14} /></span>
 						</div>
 						<div class="table-cell value-cell muted">
-							<span class="x-icon">✗</span>
+							<span class="x-icon"><X size={14} /></span>
 						</div>
 					</div>
 					<div class="table-row">
@@ -397,27 +354,27 @@
 				<div class="tradeoffs-grid">
 					<div class="tradeoff-item">
 						<span class="tradeoff-need">Resource workload balancing</span>
-						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-arrow"><ArrowRight size={14} /></span>
 						<span class="tradeoff-tool">GanttPRO or MS Project</span>
 					</div>
 					<div class="tradeoff-item">
 						<span class="tradeoff-need">Real-time collaborative editing</span>
-						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-arrow"><ArrowRight size={14} /></span>
 						<span class="tradeoff-tool">Any paid tool</span>
 					</div>
 					<div class="tradeoff-item">
 						<span class="tradeoff-need">Enterprise SSO/compliance</span>
-						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-arrow"><ArrowRight size={14} /></span>
 						<span class="tradeoff-tool">MS Project</span>
 					</div>
 					<div class="tradeoff-item">
 						<span class="tradeoff-need">Critical path analysis</span>
-						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-arrow"><ArrowRight size={14} /></span>
 						<span class="tradeoff-tool">GanttPRO or MS Project</span>
 					</div>
 					<div class="tradeoff-item">
 						<span class="tradeoff-need">Non-technical stakeholders</span>
-						<span class="tradeoff-arrow">→</span>
+						<span class="tradeoff-arrow"><ArrowRight size={14} /></span>
 						<span class="tradeoff-tool">TeamGantt or GanttPRO</span>
 					</div>
 				</div>
@@ -432,14 +389,7 @@
 			<p class="cta-desc">No signup. Your data stays local. Open source.</p>
 			<a href="/editor" class="btn-primary btn-lg">
 				Start Planning
-				<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M14 5l7 7m0 0l-7 7m7-7H3"
-					/>
-				</svg>
+				<ArrowRight size={20} />
 			</a>
 		</div>
 	</section>
