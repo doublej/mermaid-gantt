@@ -24,6 +24,8 @@
 			return;
 		}
 
+		let typeInterval: ReturnType<typeof setInterval> | null = null;
+
 		// Cursor blink
 		const cursorInterval = setInterval(() => {
 			cursorVisible = !cursorVisible;
@@ -34,13 +36,13 @@
 			hasStarted = true;
 			let index = 0;
 
-			const typeInterval = setInterval(() => {
+			typeInterval = setInterval(() => {
 				if (index < code.length) {
 					displayedCode = code.slice(0, index + 1);
 					index++;
 				} else {
 					isComplete = true;
-					clearInterval(typeInterval);
+					if (typeInterval) clearInterval(typeInterval);
 				}
 			}, typingSpeed);
 		}, startDelay);
@@ -48,6 +50,7 @@
 		return () => {
 			clearInterval(cursorInterval);
 			clearTimeout(timeout);
+			if (typeInterval) clearInterval(typeInterval);
 		};
 	});
 </script>
