@@ -159,3 +159,13 @@ export interface ProjectData {
 }
 
 export type SaveStatus = 'saved' | 'saving' | 'unsaved';
+
+// Context menu types
+export interface MenuItem {
+	label?: string;
+	icon?: string;
+	action?: () => void;
+	disabled?: boolean;
+	divider?: boolean;
+	submenu?: MenuItem[];
+}

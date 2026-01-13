@@ -180,6 +180,8 @@
 			}
 		};
 		reader.readAsText(file);
+		// Reset input to allow re-uploading the same file
+		input.value = '';
 	}
 
 	function openCSVImporter() {

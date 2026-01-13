@@ -1,6 +1,5 @@
 <script lang="ts">
-	import type { Task } from '$lib/types';
-	import type { MenuItem } from '$lib/types/menu';
+	import type { Task, MenuItem } from '$lib/types';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
 	import ContextMenu from '../ui/ContextMenu.svelte';
 
@@ -104,8 +103,13 @@
 		cleanupDragListeners();
 		const days = Math.round(previewDelta / dayWidth);
 		if (days !== 0) {
-			const actions = { move: gantt.moveTask, 'resize-start': gantt.moveTaskStart, 'resize-end': gantt.moveTaskEnd };
-			actions[dragMode as keyof typeof actions]?.(task.id, days);
+			if (dragMode === 'move') {
+				gantt.moveTask(task.id, days);
+			} else if (dragMode === 'resize-start') {
+				gantt.moveTaskStart(task.id, days);
+			} else if (dragMode === 'resize-end') {
+				gantt.moveTaskEnd(task.id, days);
+			}
 		}
 		resetDragState();
 	}

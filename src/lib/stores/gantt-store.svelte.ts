@@ -159,9 +159,9 @@ export class GanttStore {
 		// Trim history if needed
 		if (this.history.length > this.maxHistorySize) {
 			this.history.shift();
-		} else {
-			this.historyIndex = this.history.length - 1;
 		}
+		// Always point to the latest entry
+		this.historyIndex = this.history.length - 1;
 	}
 
 	undo(): void {

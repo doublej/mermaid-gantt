@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import type { MenuItem } from '$lib/types/menu';
+	import type { MenuItem } from '$lib/types';
 
 	interface Props {
 		items: MenuItem[];
@@ -101,7 +101,7 @@
 
 	function executeSelected() {
 		const item = items[selectedIndex];
-		if (item && !item.divider && !item.disabled) {
+		if (item && !item.divider && !item.disabled && item.action) {
 			item.action();
 			onClose();
 		}
@@ -109,7 +109,7 @@
 
 	function handleItemClick(item: MenuItem, event: MouseEvent) {
 		event.stopPropagation();
-		if (!item.disabled && !item.divider) {
+		if (!item.disabled && !item.divider && item.action) {
 			item.action();
 			onClose();
 		}

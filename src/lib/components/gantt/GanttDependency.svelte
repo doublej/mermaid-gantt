@@ -30,7 +30,7 @@
 	<path
 		d={path}
 		fill="none"
-		stroke="#9ca3af"
+		class="dependency-line"
 		stroke-width="1.5"
 		stroke-linecap="round"
 		stroke-linejoin="round"
@@ -39,6 +39,15 @@
 	<!-- Arrow head -->
 	<polygon
 		points="{toX},{toY} {toX - 6},{toY - 4} {toX - 6},{toY + 4}"
-		fill="#9ca3af"
+		class="dependency-arrow"
 	/>
 </g>
+
+<style>
+	.dependency-line {
+		stroke: var(--color-text-tertiary, #9ca3af);
+	}
+	.dependency-arrow {
+		fill: var(--color-text-tertiary, #9ca3af);
+	}
+</style>

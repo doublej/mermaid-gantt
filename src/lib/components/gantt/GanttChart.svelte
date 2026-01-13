@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { getGanttContext, ZOOM_LEVELS } from '$lib/stores/gantt-store.svelte';
 	import { getDateRange, diffDays, addDays, addMonths } from '$lib/utils/date-utils';
 	import GanttHeader from './GanttHeader.svelte';
@@ -7,6 +8,9 @@
 	import GanttDependency from './GanttDependency.svelte';
 
 	const gantt = getGanttContext();
+
+	// Container ref for wheel event listener
+	let containerEl: HTMLDivElement | undefined = $state();
 
 	// Track collapsed parent tasks
 	let collapsedTasks = $state(new Set<string>());
@@ -43,6 +47,9 @@
 	const totalDays = $derived(diffDays(dateRange.start, dateRange.end) + 1);
 	const chartWidth = $derived(totalDays * dayWidth);
 
+	// Task lookup map for O(1) parent lookups
+	const taskMap = $derived(new Map(gantt.data.tasks.map(t => [t.id, t])));
+
 	// Filter visible tasks (accounting for collapsed parents)
 	const visibleTaskIds = $derived.by(() => {
 		const visible = new Set<string>();
@@ -55,7 +62,7 @@
 					isHidden = true;
 					break;
 				}
-				const parent = gantt.data.tasks.find(t => t.id === current.parentId);
+				const parent = taskMap.get(current.parentId);
 				if (!parent) break;
 				current = parent;
 			}
@@ -145,6 +152,14 @@
 		gantt.setDayWidth(newDayWidth);
 	}
 
+	// Attach wheel listener with passive: false to allow preventDefault
+	onMount(() => {
+		if (containerEl) {
+			containerEl.addEventListener('wheel', handleWheel, { passive: false });
+			return () => containerEl?.removeEventListener('wheel', handleWheel);
+		}
+	});
+
 	function handleClick(event: MouseEvent) {
 		// Deselect when clicking on empty space
 		const target = event.target as Element;
@@ -166,10 +181,10 @@
 
 <div class="gantt-wrapper">
 <div
+	bind:this={containerEl}
 	class="gantt-container"
 	data-gantt-chart
 	onclick={handleClick}
-	onwheel={handleWheel}
 	role="application"
 	aria-label="Gantt chart editor"
 >
@@ -201,7 +216,7 @@
 			{#each tasks as task (task.id)}
 				{@const isFocused = gantt.view.focusedTaskId === task.id}
 				{@const isSelected = gantt.view.selectedTaskId === task.id}
-				{@const isInMultiSelect = gantt.view.selectedTaskIds.includes(task.id)}
+				{@const isInMultiSelect = gantt.view.selectedTaskIds.length > 1 && gantt.view.selectedTaskIds.includes(task.id)}
 				{@const level = gantt.getTaskLevel(task.id)}
 				{@const taskHasChildren = hasChildren(task.id)}
 				{@const isCollapsed = collapsedTasks.has(task.id)}
@@ -299,7 +314,7 @@
 					{dayWidth}
 					isFocused={gantt.view.focusedTaskId === pos.task.id}
 					isSelected={gantt.view.selectedTaskId === pos.task.id}
-					isInMultiSelect={gantt.view.selectedTaskIds.includes(pos.task.id)}
+					isInMultiSelect={gantt.view.selectedTaskIds.length > 1 && gantt.view.selectedTaskIds.includes(pos.task.id)}
 				/>
 			{/each}
 		</svg>
