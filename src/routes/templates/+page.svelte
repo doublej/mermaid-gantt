@@ -4,9 +4,9 @@
 	import { goto } from '$app/navigation';
 	import type { Template } from '$lib/stores/template-store.svelte';
 	import type { Task } from '$lib/types';
-	import { getTemplateContext } from '$lib/stores/template-store.svelte';
-	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
-	import { getPersistenceContext } from '$lib/stores/persistence-store.svelte';
+	import { getTemplateContext, type TemplateStore } from '$lib/stores/template-store.svelte';
+	import { getGanttContext, type GanttStore } from '$lib/stores/gantt-store.svelte';
+	import { getPersistenceContext, type PersistenceStore } from '$lib/stores/persistence-store.svelte';
 
 	let templates: Template[] = [];
 	let showSaveForm = $state(false);
@@ -14,23 +14,31 @@
 	let templateDescription = $state('');
 	let deleteConfirmId: string | null = $state(null);
 	let isClient = $state(false);
+	let hasContext = $state(false);
 
-	let templateStore: any;
-	let ganttStore: any;
-	let persistenceStore: any;
+	let templateStore: TemplateStore | null = null;
+	let ganttStore: GanttStore | null = null;
+	let persistenceStore: PersistenceStore | null = null;
 
 	onMount(() => {
 		isClient = true;
 		if (browser) {
-			templateStore = getTemplateContext();
-			ganttStore = getGanttContext();
-			persistenceStore = getPersistenceContext();
-			templates = templateStore.getTemplates();
+			// Try to get contexts - they may not exist if user navigated directly here
+			try {
+				templateStore = getTemplateContext();
+				ganttStore = getGanttContext();
+				persistenceStore = getPersistenceContext();
+				hasContext = true;
+				templates = templateStore.getTemplates();
+			} catch {
+				// Contexts don't exist - redirect to editor
+				goto('/editor');
+			}
 		}
 	});
 
 	function handleSaveTemplate(): void {
-		if (!templateName.trim()) return;
+		if (!templateName.trim() || !ganttStore || !templateStore) return;
 
 		// Serialize current gantt data (tasks with Date objects to ISO strings)
 		const serialized = {
@@ -66,6 +74,8 @@
 	}
 
 	async function handleUseTemplate(template: Template): Promise<void> {
+		if (!persistenceStore || !ganttStore) return;
+
 		// Create new project with template data
 		const newProjectId = persistenceStore.createProject('Untitled Project');
 		persistenceStore.switchProject(newProjectId);
@@ -102,6 +112,7 @@
 	}
 
 	function handleDeleteTemplate(id: string): void {
+		if (!templateStore) return;
 		deleteConfirmId = null;
 		templateStore.deleteTemplate(id);
 		templates = templateStore.getTemplates();
@@ -120,7 +131,7 @@
 	}
 </script>
 
-{#if isClient}
+{#if isClient && hasContext && templateStore}
 	<div class="min-h-screen bg-white dark:bg-gray-900">
 		<div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
 		<!-- Header -->
