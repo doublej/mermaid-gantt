@@ -1,0 +1,166 @@
+# Mermaid Gantt Brand Guidelines (LLM Reference)
+
+> Concise brand specification for AI assistants generating Mermaid Gantt assets, code, or content.
+
+## Identity
+
+**Product:** Mermaid Gantt
+**Tagline:** Visual Gantt charts from code
+**Description:** Keyboard-first Gantt chart editor with Mermaid syntax import/export
+
+## Logo
+
+**Concept:** Stacked timeline bars with anchor node representing task dependencies and project flow. Built on golden ratio proportions.
+
+**Construction (24x24 grid):**
+- Bar 1: x=5, y=6, width=15, height=4, rx=1 (100% opacity)
+- Bar 2: x=7, y=10, width=13, height=4, rx=1 (55% opacity)
+- Bar 3: x=5, y=14, width=8, height=4, rx=1 (30% opacity)
+- Anchor: circle at (5, 12), radius=2
+
+**Minimum sizes:**
+- 24px: Minimum usable
+- 32px: Recommended
+- 16px: Favicon only
+
+**Clear space:** 4 grid units (1 bar height) on all sides
+
+## Colors
+
+### Primary
+- Slate 900: #0f172a (logo, text, dark backgrounds)
+- Slate 50: #f8fafc (light backgrounds)
+
+### Brand Accent
+- Sky 500: #0ea5e9 (primary accent, links)
+- Sky 600: #0284c7 (hover states)
+- Sky 900: #0c4a6e (dark accent)
+
+### Supporting
+- Emerald 500: #10b981 (success, completed)
+- Amber 500: #f59e0b (warning, in-progress)
+- Red 500: #ef4444 (error, critical)
+
+### Neutral Scale (Slate)
+900: #0f172a | 800: #1e293b | 700: #334155 | 600: #475569 | 500: #64748b
+400: #94a3b8 | 300: #cbd5e1 | 200: #e2e8f0 | 100: #f1f5f9 | 50: #f8fafc
+
+### Approved Backgrounds
+- White (#ffffff) — default
+- Slate 100 (#f1f5f9) — subtle
+- Slate 900 (#0f172a) — dark mode
+- Sky 500 (#0ea5e9) — accent
+- Sky 900 (#0c4a6e) — dark accent
+- Gradient: linear-gradient(135deg, #0ea5e9, #0284c7)
+
+### Dark Mode
+In dark contexts, invert the logo: use #f8fafc (Slate 50) instead of #0f172a. UI backgrounds become Slate 900, text becomes Slate 50.
+
+## Typography
+
+### Font Stack
+- **Display/Headlines:** DM Sans Bold (700), tracking -0.02em
+- **Body/UI:** DM Sans Regular (400), line-height 1.6
+- **Code/Data:** DM Mono
+
+### Type Scale
+- 4xl: 36px/Bold | 3xl: 30px/Bold | 2xl: 24px/Semibold | xl: 20px/Semibold
+- lg: 18px/Medium | base: 16px/Regular | sm: 14px/Regular | xs: 12px/Regular
+
+### Alternative Fonts (by context)
+- Instrument Sans: Technical docs, developer tools
+- Geist: SaaS, tech-forward contexts
+- Satoshi: Marketing, social media
+- Space Grotesk: Headlines, large displays
+- DM Mono: CLI, terminal, code contexts
+
+## Logo Combinations
+
+**Horizontal lockup (primary):** Logo + "Mermaid Gantt" side by side
+**Stacked lockup:** Logo above "Mermaid Gantt"
+**Mark only:** When space is limited
+**Wordmark only:** In established contexts
+
+**Wordmark weight:** Semibold (600) is primary
+
+## Incorrect Usage (Don'ts)
+
+- Don't rotate the logo
+- Don't stretch or distort proportions
+- Don't reduce opacity
+- Don't use unapproved colors
+- Don't add drop shadows or effects
+- Don't place on busy backgrounds
+
+## File Formats
+
+- SVG: Primary format (web, print, any size)
+- PNG: Social media, presentations (export at 2x for retina)
+- ICO: Favicon (16x16, 32x32, 48x48 multi-size)
+
+## Motion
+
+### Core Principles
+1. **Swift & Courteous:** Fast entry, gentle settle; quick exit
+2. **Purposeful:** Every animation communicates state change or feedback
+3. **Consistent:** Same patterns use same timing/easing
+
+### Easing Functions
+- **Ease Out (primary):** cubic-bezier(0, 0, 0.2, 1) — Elements appearing, modals, tooltips
+- **Ease In-Out:** cubic-bezier(0.4, 0, 0.2, 1) — Position changes, dragging, expanding
+- **Ease In:** cubic-bezier(0.4, 0, 1, 1) — Elements exiting, closing
+- **Linear:** Progress indicators, spinners only
+
+### Duration Scale
+- 100ms (Micro): Button press, icon change, checkbox
+- 150ms (Fast): Tooltip, hover states
+- 200ms (Standard): Default for most UI (modal open, panel expand)
+- 300ms (Emphasis): Larger panels, complex reveals
+- 500ms (Max): Page transitions, orchestrated sequences
+
+### Stagger Pattern
+- 50ms offset between items
+- Top to bottom direction
+- Cap at 8 items
+
+### CSS Variables
+```css
+:root {
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --duration-micro: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-emphasis: 300ms;
+  --duration-max: 500ms;
+  --stagger-offset: 50ms;
+}
+```
+
+### Reduced Motion
+Always respect `prefers-reduced-motion: reduce`. Replace motion with instant state changes; opacity fades (≤100ms) can remain.
+
+## Spacing & Layout
+
+- Base unit: 4px
+- Border radius: 6px (small), 8px (medium), 12px (large), 16px (cards)
+- Container max-width: 800px (content), 1200px (app)
+- Sidebar width: 200px
+- Row height (Gantt): 40px
+- Header height: 48px
+
+## Quick Reference
+
+| Element | Color | Font | Animation |
+|---------|-------|------|-----------|
+| Primary text | #0f172a | DM Sans 400 | — |
+| Headlines | #0f172a | DM Sans 700 | — |
+| Links | #0ea5e9 | DM Sans 400 | 100ms ease-out hover |
+| Success | #10b981 | — | — |
+| Warning | #f59e0b | — | — |
+| Error | #ef4444 | — | — |
+| Code blocks | #0f172a on #f1f5f9 | DM Mono | — |
+| Buttons | #0ea5e9 bg | DM Sans 500 | 100ms ease-out |
+| Modals | — | — | 200ms ease-out entry |
+| Task bars | #0ea5e9 | — | 150ms ease-in-out snap |
