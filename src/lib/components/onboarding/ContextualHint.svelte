@@ -71,7 +71,7 @@
 			class="hint-close"
 			aria-label="Hide hints"
 		>
-			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 			</svg>
 		</button>
@@ -80,24 +80,14 @@
 
 <style>
 	.hint-bar {
-		position: fixed;
-		bottom: 1.5rem;
-		left: 50%;
-		transform: translateX(-50%);
-		z-index: 40;
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 1rem;
-		background-color: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 9999px;
-		box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-		font-size: 0.875rem;
+		gap: 0.375rem;
+		font-size: 0.75rem;
 	}
 
 	.hint-text {
-		color: var(--color-text-secondary);
+		color: var(--color-text-tertiary);
 	}
 
 	.hint-separator {
@@ -108,44 +98,33 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-width: 1.5rem;
-		height: 1.5rem;
-		padding: 0 0.375rem;
-		font-size: 0.75rem;
+		min-width: 1.25rem;
+		height: 1.25rem;
+		padding: 0 0.25rem;
+		font-size: 0.625rem;
 		font-weight: 500;
 		font-family: var(--font-family-mono);
 		color: var(--color-text-secondary);
-		/* MacBook-style keycap */
-		background: linear-gradient(
-			to bottom,
-			var(--color-surface-elevated) 0%,
-			color-mix(in srgb, var(--color-surface-elevated) 92%, black) 100%
-		);
+		background: var(--color-surface-elevated);
 		border: 1px solid var(--color-border);
-		border-bottom-width: 2px;
-		border-radius: 0.375rem;
-		box-shadow:
-			0 1px 0 var(--color-border),
-			0 2px 3px rgba(0, 0, 0, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.1);
+		border-radius: 0.25rem;
 	}
 
-	/* Key width modifiers - MacBook proportions */
-	.hint-key:global(.kbd-wide) { min-width: 2.5rem; }
-	.hint-key:global(.kbd-medium) { min-width: 2rem; }
-	.hint-key:global(.kbd-narrow) { min-width: 1.5rem; }
-	.hint-key:global(.kbd-space) { min-width: 4rem; }
+	/* Key width modifiers */
+	.hint-key:global(.kbd-wide) { min-width: 1.75rem; }
+	.hint-key:global(.kbd-medium) { min-width: 1.5rem; }
+	.hint-key:global(.kbd-narrow) { min-width: 1.25rem; }
+	.hint-key:global(.kbd-space) { min-width: 2.5rem; }
 
 	.hint-close {
-		margin-left: 0.5rem;
-		padding: 0.25rem;
+		margin-left: 0.25rem;
+		padding: 0.125rem;
 		color: var(--color-text-tertiary);
-		border-radius: 0.25rem;
-		transition: color 0.15s ease, background-color 0.15s ease;
+		border-radius: 0.125rem;
+		transition: color 0.15s ease;
 	}
 
 	.hint-close:hover {
-		color: var(--color-text);
-		background-color: var(--color-surface-elevated);
+		color: var(--color-text-secondary);
 	}
 </style>

@@ -1,19 +1,21 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getGanttContext, ZOOM_LEVELS } from '$lib/stores/gantt-store.svelte';
+	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
 	import { getDateRange, diffDays, addDays, addMonths } from '$lib/utils/date-utils';
 	import GanttHeader from './GanttHeader.svelte';
 	import GanttGrid from './GanttGrid.svelte';
 	import GanttTask from './GanttTask.svelte';
 	import GanttDependency from './GanttDependency.svelte';
 	import ContextMenu from '../ui/ContextMenu.svelte';
-	import { ZoomIn, ZoomOut, ChevronDown } from '@lucide/svelte';
+	import { ChevronDown } from '@lucide/svelte';
 	import type { MenuItem } from '$lib/types';
 
 	const gantt = getGanttContext();
 
-	// Container ref for wheel event listener
+	// Container ref for wheel event listener and size tracking
 	let containerEl: HTMLDivElement | undefined = $state();
+	let containerHeight = $state(600); // Default fallback
+	let containerWidth = $state(1200); // Default fallback
 
 	// Track collapsed parent tasks
 	let collapsedTasks = $state(new Set<string>());
@@ -65,7 +67,9 @@
 	});
 
 	const totalDays = $derived(diffDays(dateRange.start, dateRange.end) + 1);
-	const chartWidth = $derived(totalDays * dayWidth);
+	const timelineWidth = $derived(totalDays * dayWidth);
+	// Chart width: use max of timeline width or available container width to fill space
+	const chartWidth = $derived(Math.max(timelineWidth, containerWidth - SIDEBAR_WIDTH));
 
 	// Task lookup map for O(1) parent lookups
 	const taskMap = $derived(new Map(gantt.data.tasks.map(t => [t.id, t])));
@@ -95,7 +99,13 @@
 	const totalRows = $derived(
 		gantt.data.sections.length + visibleTaskIds.size
 	);
-	const chartHeight = $derived(totalRows * ROW_HEIGHT + HEADER_HEIGHT);
+	// Chart height: use max of task-based height or container height to fill space
+	const minTaskHeight = $derived(totalRows * ROW_HEIGHT + HEADER_HEIGHT);
+	const chartHeight = $derived(Math.max(minTaskHeight, containerHeight));
+	// Row count for grid - fill entire height
+	const fillRowCount = $derived(Math.ceil((chartHeight - HEADER_HEIGHT) / ROW_HEIGHT));
+	// Day count for grid - fill entire width
+	const fillDays = $derived(Math.ceil(chartWidth / dayWidth));
 
 	// Calculate task positions (accounting for section header rows and collapsed tasks)
 	const taskPositions = $derived.by(() => {
@@ -162,12 +172,25 @@
 		gantt.setDayWidth(newDayWidth);
 	}
 
-	// Attach wheel listener with passive: false to allow preventDefault
+	// Attach wheel listener and resize observer
 	onMount(() => {
-		if (containerEl) {
-			containerEl.addEventListener('wheel', handleWheel, { passive: false });
-			return () => containerEl?.removeEventListener('wheel', handleWheel);
-		}
+		if (!containerEl) return;
+
+		containerEl.addEventListener('wheel', handleWheel, { passive: false });
+
+		// Track container size to fill available space
+		const resizeObserver = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				containerHeight = entry.contentRect.height;
+				containerWidth = entry.contentRect.width;
+			}
+		});
+		resizeObserver.observe(containerEl);
+
+		return () => {
+			containerEl?.removeEventListener('wheel', handleWheel);
+			resizeObserver.disconnect();
+		};
 	});
 
 	function handleClick(event: MouseEvent) {
@@ -285,9 +308,9 @@
 			<!-- Grid -->
 			<GanttGrid
 				startDate={dateRange.start}
-				{totalDays}
+				totalDays={fillDays}
 				{dayWidth}
-				rowCount={totalRows}
+				rowCount={fillRowCount}
 				rowHeight={ROW_HEIGHT}
 				headerHeight={HEADER_HEIGHT}
 			/>
@@ -295,7 +318,7 @@
 			<!-- Header -->
 			<GanttHeader
 				startDate={dateRange.start}
-				{totalDays}
+				totalDays={fillDays}
 				{dayWidth}
 				height={HEADER_HEIGHT}
 				zoomLevel={gantt.view.zoomLevel}
@@ -364,42 +387,13 @@
 	/>
 {/if}
 
-<!-- Zoom controls (outside scrollable area) -->
-<div class="zoom-controls">
-	<button
-		onclick={() => gantt.zoomIn()}
-		disabled={gantt.view.zoomLevel === 0}
-		class="zoom-btn"
-		title="Zoom in"
-	>
-		<ZoomIn size={16} />
-	</button>
-	<div class="zoom-levels">
-		{#each ZOOM_LEVELS as level, i}
-			<button
-				class="zoom-level"
-				class:active={gantt.view.zoomLevel === i}
-				onclick={() => gantt.view.zoomLevel = i}
-			>
-				{level.name}
-			</button>
-		{/each}
-	</div>
-	<button
-		onclick={() => gantt.zoomOut()}
-		disabled={gantt.view.zoomLevel === ZOOM_LEVELS.length - 1}
-		class="zoom-btn"
-		title="Zoom out"
-	>
-		<ZoomOut size={16} />
-	</button>
-</div>
 </div>
 
 <style>
 	.gantt-wrapper {
 		display: flex;
 		flex-direction: column;
+		height: 100%;
 	}
 
 	.gantt-container {
@@ -407,11 +401,8 @@
 		display: flex;
 		overflow: auto;
 		background-color: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 0.75rem;
-		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-		min-height: 400px;
-		max-height: calc(100vh - 200px);
+		flex: 1;
+		min-height: 0;
 	}
 
 	.gantt-sidebar {
@@ -551,67 +542,5 @@
 
 	.extend-btn-right {
 		right: 8px;
-	}
-
-	.zoom-controls {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-		margin-top: 12px;
-		padding: 8px;
-	}
-
-	.zoom-btn {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 6px;
-		color: var(--color-text-secondary);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 6px;
-		cursor: pointer;
-		transition: all 0.15s;
-	}
-
-	.zoom-btn:hover:not(:disabled) {
-		background: var(--color-surface-elevated);
-		color: var(--color-text);
-	}
-
-	.zoom-btn:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-	}
-
-	.zoom-levels {
-		display: flex;
-		gap: 2px;
-		background: var(--color-surface-elevated);
-		padding: 2px;
-		border-radius: 6px;
-	}
-
-	.zoom-level {
-		padding: 4px 10px;
-		font-size: 12px;
-		font-weight: 500;
-		color: var(--color-text-secondary);
-		background: transparent;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-		transition: all 0.15s;
-	}
-
-	.zoom-level:hover {
-		color: var(--color-text);
-	}
-
-	.zoom-level.active {
-		background: var(--color-surface);
-		color: var(--color-text);
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 	}
 </style>

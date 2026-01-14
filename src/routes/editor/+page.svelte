@@ -14,6 +14,7 @@
 	} from '@lucide/svelte';
 
 	import GanttChart from '$lib/components/gantt/GanttChart.svelte';
+	import ZoomControls from '$lib/components/gantt/ZoomControls.svelte';
 	import TableView from '$lib/components/table/TableView.svelte';
 	import KeyboardHandler from '$lib/components/keyboard/KeyboardHandler.svelte';
 	import CommandPalette from '$lib/components/keyboard/CommandPalette.svelte';
@@ -161,122 +162,127 @@
 	<title>{persistence.currentProject?.name ?? 'Editor'} - Mermaid Gantt</title>
 </svelte:head>
 
-<div class="min-h-screen bg-page">
+<div class="h-screen flex flex-col overflow-hidden bg-page">
 	<!-- Keyboard handler (global) -->
 	<KeyboardHandler />
 
-	<!-- Header -->
-	<header class="bg-surface border-b border-default">
-		<div class="w-full px-4">
-			<div class="flex items-center justify-between h-16">
-				<div class="flex items-center gap-4">
-					<a href="/" class="text-xl font-semibold text-primary hover:text-accent transition-colors">Mermaid Gantt</a>
-					<span class="text-tertiary">/</span>
-					<ProjectPicker />
-					<button
-						onclick={() => persistence.openFileBrowser()}
-						class="btn-ghost"
-						title="Browse Projects ({modKey}+B)"
-					>
-						<LayoutGrid size={16} />
-					</button>
-					<SaveStatus />
-				</div>
+	<!-- Header: Document-level operations -->
+	<header class="h-14 flex-shrink-0 bg-surface border-b border-default">
+		<div class="h-full px-4 flex items-center justify-between">
+			<!-- Left: Brand + Project -->
+			<div class="flex items-center gap-4">
+				<a href="/" class="text-lg font-semibold text-primary hover:text-accent transition-colors">Mermaid Gantt</a>
+				<span class="text-tertiary">/</span>
+				<ProjectPicker />
+				<button
+					onclick={() => persistence.openFileBrowser()}
+					class="btn-ghost"
+					title="Browse Projects ({modKey}+B)"
+				>
+					<LayoutGrid size={16} />
+				</button>
+				<SaveStatus />
+			</div>
 
-				<div class="flex items-center gap-2">
-					<!-- Theme toggle -->
-					<button
-						onclick={() => theme.toggleTheme()}
-						class="btn-ghost"
-						title="Toggle theme"
-					>
-						{#if theme.resolvedTheme === 'light'}
-							<Moon size={20} />
-						{:else}
-							<Sun size={20} />
-						{/if}
-					</button>
+			<!-- Right: Document actions -->
+			<div class="flex items-center gap-2">
+				<!-- New Task -->
+				<button
+					onclick={() => gantt.addTask()}
+					class="btn-primary text-sm py-1.5"
+				>
+					<Plus size={16} />
+					New Task
+				</button>
 
-					<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
+				<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
 
-					<!-- Undo/Redo -->
-					<button
-						onclick={() => gantt.undo()}
-						disabled={!gantt.canUndo}
-						class="btn-ghost"
-						title="Undo ({modKey}+Z)"
-					>
-						<Undo2 size={20} />
-					</button>
-					<button
-						onclick={() => gantt.redo()}
-						disabled={!gantt.canRedo}
-						class="btn-ghost"
-						title="Redo ({modKey}+Shift+Z)"
-					>
-						<Redo2 size={20} />
-					</button>
+				<!-- Undo/Redo -->
+				<button
+					onclick={() => gantt.undo()}
+					disabled={!gantt.canUndo}
+					class="btn-ghost"
+					title="Undo ({modKey}+Z)"
+				>
+					<Undo2 size={18} />
+				</button>
+				<button
+					onclick={() => gantt.redo()}
+					disabled={!gantt.canRedo}
+					class="btn-ghost"
+					title="Redo ({modKey}+Shift+Z)"
+				>
+					<Redo2 size={18} />
+				</button>
 
-					<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
+				<!-- Version History -->
+				<button
+					onclick={() => persistence.openHistory()}
+					class="btn-ghost"
+					title="Version History ({modKey}+H)"
+				>
+					<Clock size={18} />
+				</button>
 
-					<!-- Version History -->
-					<button
-						onclick={() => persistence.openHistory()}
-						class="btn-ghost"
-						title="Version History ({modKey}+H)"
-					>
-						<Clock size={20} />
-					</button>
+				<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
 
-					<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
+				<!-- Import/Export -->
+				<button
+					onclick={() => keyboard.openImport()}
+					class="btn-secondary text-sm py-1.5"
+					title="Import ({modKey}+O)"
+				>
+					Import
+				</button>
+				<button
+					onclick={() => keyboard.openExport()}
+					class="btn-secondary text-sm py-1.5"
+					title="Export ({modKey}+S)"
+				>
+					Export
+				</button>
 
-					<!-- Import/Export -->
-					<button
-						onclick={() => keyboard.openImport()}
-						class="btn-secondary text-sm py-1.5"
-						title="Import ({modKey}+O)"
-					>
-						Import
-					</button>
-					<button
-						onclick={() => keyboard.openExport()}
-						class="btn-secondary text-sm py-1.5"
-						title="Export ({modKey}+S)"
-					>
-						Export
-					</button>
+				<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
 
-					<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
-
-					<!-- Help -->
-					<button
-						onclick={() => keyboard.openHelp()}
-						class="btn-ghost"
-						title="Keyboard shortcuts (F1)"
-					>
-						<HelpCircle size={20} />
-					</button>
-				</div>
+				<!-- Help -->
+				<button
+					onclick={() => keyboard.openHelp()}
+					class="btn-ghost"
+					title="Keyboard shortcuts (F1)"
+				>
+					<HelpCircle size={18} />
+				</button>
 			</div>
 		</div>
 	</header>
 
-	<!-- Main content -->
-	<main class="w-full px-4 py-6">
-		<!-- Quick hint bar -->
-		<div class="flex items-center justify-between mb-4">
-			<div class="flex items-center gap-2 text-sm text-secondary">
-				<span>Quick:</span>
-				<kbd class="kbd kbd-sm">{modKey}</kbd>{#if !isMac}+{/if}<kbd class="kbd kbd-sm">K</kbd>
-				<span class="text-tertiary">Command Palette</span>
-				<span class="mx-2 text-tertiary">|</span>
-				<kbd class="kbd kbd-sm">{modKey}</kbd>{#if !isMac}+{/if}<kbd class="kbd kbd-sm">N</kbd>
-				<span class="text-tertiary">New Task</span>
-				<span class="mx-2 text-tertiary">|</span>
-				<kbd class="kbd kbd-sm">?</kbd>
-				<span class="text-tertiary">All Shortcuts</span>
+	<!-- Content: Chart fills remaining space -->
+	<main class="flex-1 min-h-0">
+		{#if currentView === 'gantt'}
+			<GanttChart />
+		{:else}
+			<TableView />
+		{/if}
+	</main>
+
+	<!-- Footer: View controls + Status -->
+	<footer class="h-10 flex-shrink-0 px-4 bg-surface border-t border-default">
+		<div class="h-full flex items-center justify-between">
+			<!-- Left: Stats -->
+			<div class="flex items-center gap-4 text-sm text-secondary">
+				<span>{gantt.data.tasks.length} task{gantt.data.tasks.length !== 1 ? 's' : ''}</span>
+				<span class="text-tertiary">·</span>
+				<span>{gantt.data.sections.length} section{gantt.data.sections.length !== 1 ? 's' : ''}</span>
+				{#if gantt.clipboard}
+					<span class="text-tertiary">·</span>
+					<span class="text-accent">Copied</span>
+				{/if}
 			</div>
 
+			<!-- Center: Contextual hints -->
+			<ContextualHint />
+
+			<!-- Right: View controls -->
 			<div class="flex items-center gap-3">
 				<!-- View switcher -->
 				<div class="view-switcher">
@@ -286,8 +292,7 @@
 						onclick={() => currentView = 'gantt'}
 						title="Gantt Chart View"
 					>
-						<GanttChartIcon size={16} />
-						Gantt
+						<GanttChartIcon size={14} />
 					</button>
 					<button
 						class="view-btn"
@@ -295,37 +300,28 @@
 						onclick={() => currentView = 'table'}
 						title="Table View"
 					>
-						<Table size={16} />
-						Table
+						<Table size={14} />
 					</button>
 				</div>
 
+				<!-- Zoom controls -->
+				<ZoomControls compact />
+
+				<!-- Theme toggle -->
 				<button
-					onclick={() => gantt.addTask()}
-					class="btn-primary"
+					onclick={() => theme.toggleTheme()}
+					class="btn-ghost p-1.5"
+					title="Toggle theme"
 				>
-					<Plus size={16} />
-					New Task
+					{#if theme.resolvedTheme === 'light'}
+						<Moon size={16} />
+					{:else}
+						<Sun size={16} />
+					{/if}
 				</button>
 			</div>
 		</div>
-
-		<!-- Main view -->
-		{#if currentView === 'gantt'}
-			<GanttChart />
-		{:else}
-			<TableView />
-		{/if}
-
-		<!-- Task stats -->
-		<div class="mt-4 flex items-center gap-6 text-sm text-secondary">
-			<span>{gantt.data.tasks.length} task{gantt.data.tasks.length !== 1 ? 's' : ''}</span>
-			<span>{gantt.data.sections.length} section{gantt.data.sections.length !== 1 ? 's' : ''}</span>
-			{#if gantt.clipboard}
-				<span class="text-accent">Task copied to clipboard</span>
-			{/if}
-		</div>
-	</main>
+	</footer>
 
 	<!-- Modals -->
 	<CommandPalette />
@@ -334,7 +330,6 @@
 	<TaskEditor />
 	<ImportExport {ganttElement} />
 	<SmartImport />
-	<ContextualHint />
 	<VersionHistory />
 	<FileBrowser />
 	<FileDropZone onFileDrop={handleFileDrop} />
@@ -345,21 +340,19 @@
 	.view-switcher {
 		display: flex;
 		background-color: var(--color-surface-elevated);
-		border-radius: 0.5rem;
-		padding: 0.125rem;
+		border-radius: 0.375rem;
+		padding: 2px;
 	}
 
 	.view-btn {
 		display: flex;
 		align-items: center;
-		gap: 0.375rem;
-		padding: 0.375rem 0.75rem;
-		font-size: 0.875rem;
-		font-weight: 500;
+		justify-content: center;
+		padding: 4px 6px;
 		color: var(--color-text-secondary);
 		background: transparent;
 		border: none;
-		border-radius: 0.375rem;
+		border-radius: 0.25rem;
 		cursor: pointer;
 		transition: background-color 0.15s, color 0.15s;
 	}
