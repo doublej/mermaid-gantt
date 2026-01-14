@@ -187,6 +187,9 @@
 			case 'openSmartImport':
 				keyboard.openSmartImport();
 				return true;
+			case 'openMermaidPreview':
+				keyboard.openMermaidPreview();
+				return true;
 			case 'undo':
 				gantt.undo();
 				return true;

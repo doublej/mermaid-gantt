@@ -3,7 +3,7 @@ import type { KeyBinding, KeyCategory, KeyModifier } from '$lib/types';
 
 const KEYBOARD_CONTEXT = Symbol('keyboard');
 
-export type KeyboardMode = 'normal' | 'editing' | 'command-palette' | 'help' | 'smart-import' | 'import-export';
+export type KeyboardMode = 'normal' | 'editing' | 'command-palette' | 'help' | 'smart-import' | 'import-export' | 'mermaid-preview';
 
 // All keyboard bindings
 export const keyBindings: KeyBinding[] = [
@@ -73,6 +73,8 @@ export const keyBindings: KeyBinding[] = [
 	{ key: '2', modifiers: ['ctrl'], action: 'switchTableView', description: 'Switch to Table view', category: 'global' },
 	{ key: 'b', modifiers: ['ctrl'], action: 'openFileBrowser', description: 'Browse projects', category: 'global' },
 	{ key: 'B', modifiers: ['ctrl'], action: 'openFileBrowser', description: 'Browse projects', category: 'global' },
+	{ key: 'm', modifiers: ['ctrl'], action: 'openMermaidPreview', description: 'Mermaid preview', category: 'global' },
+	{ key: 'M', modifiers: ['ctrl'], action: 'openMermaidPreview', description: 'Mermaid preview', category: 'global' },
 	{ key: ']', modifiers: ['ctrl'], action: 'indentTask', description: 'Indent task', category: 'task' },
 	{ key: '[', modifiers: ['ctrl'], action: 'outdentTask', description: 'Outdent task', category: 'task' },
 	{ key: 'm', modifiers: [], action: 'toggleMilestone', description: 'Toggle milestone', category: 'task' },
@@ -90,6 +92,7 @@ export class KeyboardStore {
 	showHelp = $derived(this.mode === 'help');
 	showImportExport = $derived(this.mode === 'import-export');
 	showSmartImport = $derived(this.mode === 'smart-import');
+	showMermaidPreview = $derived(this.mode === 'mermaid-preview');
 
 	// Component-specific state (will be moved to components in Phase 2)
 	importExportMode = $state<'import' | 'export'>('export');
@@ -163,6 +166,10 @@ export class KeyboardStore {
 	openSmartImport(initialText: string | null = null): void {
 		this.smartImportInitialText = initialText;
 		this.mode = 'smart-import';
+	}
+
+	openMermaidPreview(): void {
+		this.mode = 'mermaid-preview';
 	}
 
 	closeAllModals(): void {

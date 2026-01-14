@@ -10,7 +10,7 @@
 	import { BUILTIN_TEMPLATES } from '$lib/data/templates';
 	import {
 		LayoutGrid, Moon, Sun, Undo2, Redo2, Clock,
-		HelpCircle, Plus, Table, GanttChart as GanttChartIcon
+		HelpCircle, Plus, Table, GanttChart as GanttChartIcon, Code
 	} from '@lucide/svelte';
 
 	import GanttChart from '$lib/components/gantt/GanttChart.svelte';
@@ -24,6 +24,7 @@
 	import TaskEditor from '$lib/components/editor/TaskEditor.svelte';
 	import ImportExport from '$lib/components/io/ImportExport.svelte';
 	import SmartImport from '$lib/components/io/SmartImport.svelte';
+	import MermaidPreview from '$lib/components/io/MermaidPreview.svelte';
 	import FileDropZone from '$lib/components/io/FileDropZone.svelte';
 	import ClipboardToast from '$lib/components/ui/ClipboardToast.svelte';
 	import ProjectPicker from '$lib/components/persistence/ProjectPicker.svelte';
@@ -241,6 +242,13 @@
 				>
 					Export
 				</button>
+				<button
+					onclick={() => keyboard.openMermaidPreview()}
+					class="btn-ghost"
+					title="Mermaid Preview ({modKey}+M)"
+				>
+					<Code size={18} />
+				</button>
 
 				<div class="w-px h-6 bg-[var(--color-border)] mx-1"></div>
 
@@ -330,6 +338,7 @@
 	<TaskEditor />
 	<ImportExport {ganttElement} />
 	<SmartImport />
+	<MermaidPreview />
 	<VersionHistory />
 	<FileBrowser />
 	<FileDropZone onFileDrop={handleFileDrop} />

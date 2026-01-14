@@ -179,9 +179,10 @@
 </script>
 
 {#if keyboard.showImportExport}
+	<button class="modal-backdrop" onclick={close} aria-label="Close"></button>
+
 	<div
-		class="modal-backdrop flex items-center justify-center"
-		onclick={handleBackdropClick}
+		class="io-panel"
 		onkeydown={handleKeyDown}
 		role="dialog"
 		aria-modal="true"
@@ -189,11 +190,10 @@
 		tabindex="-1"
 	>
 		{#if showCSVImporter}
-			<div class="io-modal">
+			<div class="csv-container">
 				<CSVImporter onClose={() => { showCSVImporter = false; csvInitialContent = null; }} onImport={handleCSVImport} initialContent={csvInitialContent} />
 			</div>
 		{:else}
-			<div class="io-modal">
 				<!-- Header with tabs -->
 				<div class="io-tabs">
 					<button
@@ -218,7 +218,7 @@
 				</div>
 
 				<!-- Content -->
-				<div class="p-6">
+				<div class="panel-content">
 					{#if keyboard.importExportMode === 'import'}
 						<!-- Import mode -->
 						<div class="space-y-4">
@@ -383,23 +383,35 @@
 						<button onclick={handleDownload} class="btn-primary">Download</button>
 					{/if}
 				</div>
-			</div>
 		{/if}
 	</div>
 {/if}
 
 <style>
-	.io-modal {
-		width: 100%;
-		max-width: 42rem;
-		max-height: 90vh;
+	.io-panel {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 28rem;
 		background-color: var(--color-surface);
-		border-radius: 0.75rem;
-		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-		border: 1px solid var(--color-border);
-		overflow: hidden;
+		box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+		z-index: 50;
 		display: flex;
 		flex-direction: column;
+	}
+
+	.csv-container {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.panel-content {
+		flex: 1;
+		overflow-y: auto;
+		padding: 1.5rem;
 	}
 
 	.io-tabs {
