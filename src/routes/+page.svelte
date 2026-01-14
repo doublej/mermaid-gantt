@@ -69,10 +69,6 @@
 	<section class="hero">
 		<div class="hero-inner">
 			<div class="hero-left">
-				<div class="hero-badge">
-					<kbd>⌘</kbd><span>K</span>
-					<span class="badge-label">to command</span>
-				</div>
 				<h1 class="hero-title">
 					Plan at the<br />speed of thought
 				</h1>
@@ -90,11 +86,6 @@
 			</div>
 			<div class="hero-right">
 				<DemoChart interactive maxHeight="360px" />
-				<p class="hero-hint">
-					<span class="hint-group"><kbd>↑</kbd> <kbd>↓</kbd> navigate</span>
-					<span class="hint-group"><kbd>Enter</kbd> edit</span>
-					<span class="hint-group"><kbd>D</kbd> drag</span>
-				</p>
 			</div>
 		</div>
 	</section>
@@ -487,34 +478,6 @@
 		}
 	}
 
-	.hero-badge {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-		margin-bottom: 1.5rem;
-		padding: 0.375rem 0.75rem;
-		background: var(--color-surface-elevated);
-		border: 1px solid var(--color-border);
-		border-radius: 9999px;
-		font-family: var(--font-family-mono);
-		font-size: 0.75rem;
-		color: var(--color-text-secondary);
-	}
-
-	.hero-badge kbd {
-		padding: 0.125rem 0.375rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: 3px;
-		font-family: var(--font-family-mono);
-		font-size: 0.6875rem;
-	}
-
-	.badge-label {
-		margin-left: 0.375rem;
-		color: var(--color-text-tertiary);
-	}
-
 	.hero-title {
 		font-family: var(--font-family-display);
 		font-size: clamp(2.25rem, 5vw, 3.5rem);
@@ -591,33 +554,6 @@
 
 	.hero-right {
 		position: relative;
-	}
-
-	.hero-hint {
-		margin-top: 0.75rem;
-		display: flex;
-		justify-content: center;
-		flex-wrap: wrap;
-		gap: 0.75rem 1.25rem;
-		font-family: var(--font-family-mono);
-		font-size: 0.6875rem;
-		color: var(--color-text-tertiary);
-	}
-
-	.hint-group {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-		white-space: nowrap;
-	}
-
-	.hero-hint kbd {
-		padding: 0.1875rem 0.375rem;
-		background: var(--color-surface-elevated);
-		border: 1px solid var(--color-border);
-		border-radius: 3px;
-		font-size: 0.625rem;
-		line-height: 1;
 	}
 
 	/* Sections */
