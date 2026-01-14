@@ -191,16 +191,17 @@
 
 	<main class="preview-main">
 		<div class="preview-editor">
-			<label class="editor-label">Mermaid Code</label>
+			<span class="editor-label">Mermaid Code</span>
 			<textarea
 				bind:value={mermaidCode}
 				class="editor-textarea"
 				spellcheck="false"
+				aria-label="Mermaid Code"
 			></textarea>
 		</div>
 
 		<div class="preview-output">
-			<label class="output-label">Live Preview</label>
+			<span class="output-label">Live Preview</span>
 			<div class="output-container">
 				{#if renderError}
 					<div class="error-box">

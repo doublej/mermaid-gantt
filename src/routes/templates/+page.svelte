@@ -16,9 +16,9 @@
 	let isClient = $state(false);
 	let hasContext = $state(false);
 
-	let templateStore: TemplateStore | null = null;
-	let ganttStore: GanttStore | null = null;
-	let persistenceStore: PersistenceStore | null = null;
+	let templateStore = $state<TemplateStore | null>(null);
+	let ganttStore = $state<GanttStore | null>(null);
+	let persistenceStore = $state<PersistenceStore | null>(null);
 
 	onMount(() => {
 		isClient = true;
@@ -157,10 +157,11 @@
 			{:else}
 				<div class="space-y-4">
 					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+						<label for="template-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 							Template Name
 						</label>
 						<input
+							id="template-name"
 							type="text"
 							bind:value={templateName}
 							placeholder="e.g., My Custom Workflow"
@@ -170,10 +171,11 @@
 						/>
 					</div>
 					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+						<label for="template-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 							Description (optional)
 						</label>
 						<textarea
+							id="template-description"
 							bind:value={templateDescription}
 							placeholder="Describe what this template is for..."
 							rows="3"

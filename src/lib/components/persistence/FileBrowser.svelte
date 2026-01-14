@@ -9,8 +9,8 @@
 	let isRenaming = $state(false);
 	let newProjectName = $state('');
 	let searchQuery = $state('');
-	let createInput: HTMLInputElement;
-	let renameInput: HTMLInputElement;
+	let createInput = $state<HTMLInputElement | null>(null);
+	let renameInput = $state<HTMLInputElement | null>(null);
 
 	// Auto-select current project when opening
 	$effect(() => {
@@ -22,16 +22,18 @@
 	// Focus input when creating
 	$effect(() => {
 		if (isCreating && createInput) {
-			setTimeout(() => createInput.focus(), 50);
+			const input = createInput;
+			setTimeout(() => input.focus(), 50);
 		}
 	});
 
 	// Focus input when renaming
 	$effect(() => {
 		if (isRenaming && renameInput) {
+			const input = renameInput;
 			setTimeout(() => {
-				renameInput.focus();
-				renameInput.select();
+				input.focus();
+				input.select();
 			}, 50);
 		}
 	});

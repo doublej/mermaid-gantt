@@ -7,7 +7,7 @@
 
 	const gantt = getGanttContext();
 
-	let titleInput: HTMLInputElement;
+	let titleInput = $state<HTMLInputElement | null>(null);
 
 	const task = $derived(
 		gantt.data.tasks.find((t) => t.id === gantt.view.editingTaskId) ?? null
@@ -63,9 +63,10 @@
 	// Focus title input when opened
 	$effect(() => {
 		if (gantt.view.editingTaskId && titleInput) {
+			const input = titleInput;
 			setTimeout(() => {
-				titleInput.focus();
-				titleInput.select();
+				input.focus();
+				input.select();
 			}, 50);
 		}
 	});
@@ -248,17 +249,13 @@
 
 				<!-- Color -->
 				<div>
-					<label class="form-label">
-						Color
-					</label>
+					<span class="form-label">Color</span>
 					<ColorPicker value={color} onchange={(c) => color = c} />
 				</div>
 
 				<!-- Tags -->
 				<div>
-					<label class="form-label">
-						Tags
-					</label>
+					<span class="form-label">Tags</span>
 					<TagInput value={tags} onchange={(t) => tags = t} />
 				</div>
 

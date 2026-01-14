@@ -225,6 +225,7 @@
 		/>
 
 		<!-- Move handle (whole diamond) -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<polygon
 			points="{centerX},{centerY - size} {centerX + size},{centerY} {centerX},{centerY + size} {centerX - size},{centerY}"
 			fill="transparent"
@@ -289,6 +290,7 @@
 		{/if}
 
 		<!-- Hit zones for dragging -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<!-- Left resize handle -->
 		<rect
 			x={previewX}
@@ -300,6 +302,7 @@
 			onmousedown={(e) => startDrag(e, 'resize-start')}
 		/>
 
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<!-- Center move area -->
 		<rect
 			x={previewX + EDGE_WIDTH}
@@ -311,6 +314,7 @@
 			onmousedown={(e) => startDrag(e, 'move')}
 		/>
 
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<!-- Right resize handle -->
 		<rect
 			x={previewX + previewWidth - EDGE_WIDTH}

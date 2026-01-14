@@ -253,8 +253,8 @@
 				<h4 class="text-sm font-medium mb-3">Map Columns</h4>
 				<div class="grid grid-cols-2 gap-3">
 					<div class="mapping-field">
-						<label>Title *</label>
-						<select bind:value={titleColumn} class="mapping-select">
+						<label for="csv-title-col">Title *</label>
+						<select id="csv-title-col" bind:value={titleColumn} class="mapping-select">
 							<option value={-1}>-- Select --</option>
 							{#each parseResult.headers as header, i}
 								<option value={i}>{header}</option>
@@ -263,8 +263,8 @@
 					</div>
 
 					<div class="mapping-field">
-						<label>Start Date *</label>
-						<select bind:value={startDateColumn} class="mapping-select">
+						<label for="csv-start-col">Start Date *</label>
+						<select id="csv-start-col" bind:value={startDateColumn} class="mapping-select">
 							<option value={-1}>-- Select --</option>
 							{#each parseResult.headers as header, i}
 								<option value={i}>{header}</option>
@@ -273,8 +273,8 @@
 					</div>
 
 					<div class="mapping-field">
-						<label>End Date</label>
-						<select bind:value={endDateColumn} class="mapping-select">
+						<label for="csv-end-col">End Date</label>
+						<select id="csv-end-col" bind:value={endDateColumn} class="mapping-select">
 							<option value={-1}>-- None --</option>
 							{#each parseResult.headers as header, i}
 								<option value={i}>{header}</option>
@@ -283,8 +283,8 @@
 					</div>
 
 					<div class="mapping-field">
-						<label>Section</label>
-						<select bind:value={sectionColumn} class="mapping-select">
+						<label for="csv-section-col">Section</label>
+						<select id="csv-section-col" bind:value={sectionColumn} class="mapping-select">
 							<option value={-1}>-- None --</option>
 							{#each parseResult.headers as header, i}
 								<option value={i}>{header}</option>
@@ -293,8 +293,8 @@
 					</div>
 
 					<div class="mapping-field">
-						<label>Status</label>
-						<select bind:value={statusColumn} class="mapping-select">
+						<label for="csv-status-col">Status</label>
+						<select id="csv-status-col" bind:value={statusColumn} class="mapping-select">
 							<option value={-1}>-- None --</option>
 							{#each parseResult.headers as header, i}
 								<option value={i}>{header}</option>
@@ -303,8 +303,8 @@
 					</div>
 
 					<div class="mapping-field">
-						<label>Notes</label>
-						<select bind:value={notesColumn} class="mapping-select">
+						<label for="csv-notes-col">Notes</label>
+						<select id="csv-notes-col" bind:value={notesColumn} class="mapping-select">
 							<option value={-1}>-- None --</option>
 							{#each parseResult.headers as header, i}
 								<option value={i}>{header}</option>

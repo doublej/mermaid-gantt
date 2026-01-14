@@ -788,10 +788,10 @@
 					<span>Mermaid Gantt</span>
 				</div>
 				<nav class="web-nav">
-					<a>Features</a>
-					<a>Docs</a>
-					<a>Pricing</a>
-					<a class="cta">Get Started</a>
+					<span>Features</span>
+					<span>Docs</span>
+					<span>Pricing</span>
+					<span class="cta">Get Started</span>
 				</nav>
 			</header>
 			<div class="web-hero">
@@ -2195,13 +2195,12 @@
 		gap: 1.5rem;
 	}
 
-	.web-nav a {
+	.web-nav span {
 		font-size: 0.85rem;
 		color: #475569;
-		text-decoration: none;
 	}
 
-	.web-nav a.cta {
+	.web-nav span.cta {
 		background: #0ea5e9;
 		color: white;
 		padding: 0.5rem 1rem;

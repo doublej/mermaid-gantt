@@ -138,7 +138,7 @@
 	}
 
 	// Toggle collapse state
-	function toggleCollapse(taskId: string, event: MouseEvent) {
+	function toggleCollapse(taskId: string, event: Event) {
 		event.stopPropagation();
 		const newSet = new Set(collapsedTasks);
 		if (newSet.has(taskId)) {
@@ -190,6 +190,8 @@
 </script>
 
 <div class="gantt-wrapper">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
 	bind:this={containerEl}
 	class="gantt-container"
@@ -197,6 +199,7 @@
 	onclick={handleClick}
 	role="application"
 	aria-label="Gantt chart editor"
+	tabindex="-1"
 >
 	<!-- Sidebar with section/task names (sticky to stay visible on horizontal scroll) -->
 	<div
@@ -244,14 +247,17 @@
 					>
 						<!-- Expand/collapse chevron for parent tasks -->
 						{#if taskHasChildren}
-							<button
+							<span
 								class="chevron-btn"
 								class:collapsed={isCollapsed}
+								role="button"
+								tabindex="0"
 								onclick={(e) => toggleCollapse(task.id, e)}
+								onkeydown={(e) => e.key === 'Enter' && toggleCollapse(task.id, e)}
 								aria-label={isCollapsed ? 'Expand' : 'Collapse'}
 							>
 								<ChevronDown size={12} class="chevron-icon" />
-							</button>
+							</span>
 						{:else}
 							<span class="chevron-spacer"></span>
 						{/if}

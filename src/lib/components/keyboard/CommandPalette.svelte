@@ -10,7 +10,7 @@
 
 	let searchQuery = $state('');
 	let selectedIndex = $state(0);
-	let inputRef: HTMLInputElement;
+	let inputRef = $state<HTMLInputElement | null>(null);
 
 	// Build command list from bindings
 	const commands = $derived.by(() => {
@@ -106,16 +106,18 @@
 </script>
 
 {#if keyboard.showCommandPalette}
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="modal-backdrop flex items-start justify-center pt-[15vh]"
 		onclick={handleBackdropClick}
+		onkeydown={handleKeyDown}
 		role="dialog"
 		aria-modal="true"
 		aria-label="Command palette"
+		tabindex="-1"
 	>
 		<div
 			class="w-full max-w-lg bg-surface rounded-xl shadow-2xl overflow-hidden border border-default"
-			onkeydown={handleKeyDown}
 		>
 			<!-- Search input -->
 			<div class="flex items-center px-4 border-b border-default">
