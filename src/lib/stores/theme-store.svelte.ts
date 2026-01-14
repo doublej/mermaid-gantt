@@ -62,7 +62,7 @@ function getInitialTheme(): Theme {
 	if (stored === 'light' || stored === 'dark' || stored === 'system') {
 		return stored;
 	}
-	return 'system';
+	return 'light';
 }
 
 function getSystemPreference(): ResolvedTheme {
