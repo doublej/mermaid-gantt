@@ -190,6 +190,9 @@
 			case 'openMermaidPreview':
 				keyboard.openMermaidPreview();
 				return true;
+			case 'openSettings':
+				keyboard.openSettings();
+				return true;
 			case 'undo':
 				gantt.undo();
 				return true;

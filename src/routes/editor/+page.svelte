@@ -7,6 +7,7 @@
 	import { createTemplateStore, setTemplateContext } from '$lib/stores/template-store.svelte';
 	import { createClipboardWatcherStore, setClipboardWatcherContext } from '$lib/stores/clipboard-watcher.svelte';
 	import { getThemeContext } from '$lib/stores/theme-store.svelte';
+	import { createSettingsStore, setSettingsContext } from '$lib/stores/settings-store.svelte';
 	import { BUILTIN_TEMPLATES } from '$lib/data/templates';
 	import {
 		LayoutGrid, Moon, Sun, Undo2, Redo2, Clock,
@@ -26,6 +27,7 @@
 	import SmartImport from '$lib/components/io/SmartImport.svelte';
 	import MermaidPreview from '$lib/components/io/MermaidPreview.svelte';
 	import FileDropZone from '$lib/components/io/FileDropZone.svelte';
+	import Settings from '$lib/components/settings/Settings.svelte';
 	import ClipboardToast from '$lib/components/ui/ClipboardToast.svelte';
 	import ProjectPicker from '$lib/components/persistence/ProjectPicker.svelte';
 	import SaveStatus from '$lib/components/persistence/SaveStatus.svelte';
@@ -53,6 +55,7 @@
 	const persistence = createPersistenceStore();
 	const template = createTemplateStore(BUILTIN_TEMPLATES);
 	const clipboardWatcher = createClipboardWatcherStore();
+	const settings = createSettingsStore();
 	const theme = getThemeContext();
 
 	// Provide context
@@ -62,6 +65,7 @@
 	setPersistenceContext(persistence);
 	setTemplateContext(template);
 	setClipboardWatcherContext(clipboardWatcher);
+	setSettingsContext(settings);
 
 	// Track data hash for change detection
 	let lastDataHash = '';
@@ -73,6 +77,11 @@
 			persistence.markDirty();
 		}
 		lastDataHash = currentHash;
+	});
+
+	// Sync settings to gantt store
+	$effect(() => {
+		gantt.sortByStartDate = settings.sortTasksByStartDate;
 	});
 
 	// Show tutorial on first visit + setup persistence
@@ -339,6 +348,7 @@
 	<ImportExport {ganttElement} />
 	<SmartImport />
 	<MermaidPreview />
+	<Settings />
 	<VersionHistory />
 	<FileBrowser />
 	<FileDropZone onFileDrop={handleFileDrop} />

@@ -98,18 +98,24 @@ export class GanttStore {
 	// Clipboard
 	clipboard = $state<ClipboardTask | null>(null);
 
+	// Settings (synced from SettingsStore)
+	sortByStartDate = $state(false);
+
 	// Derived state
 	selectedTask = $derived(this.data.tasks.find((t) => t.id === this.view.selectedTaskId) ?? null);
 
 	focusedTask = $derived(this.data.tasks.find((t) => t.id === this.view.focusedTaskId) ?? null);
 
 	tasksBySection = $derived(
-		this.data.sections.map((s) => ({
-			section: s,
-			tasks: this.data.tasks
-				.filter((t) => t.sectionId === s.id)
-				.sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-		}))
+		this.data.sections.map((s) => {
+			const sectionTasks = this.data.tasks.filter((t) => t.sectionId === s.id);
+			return {
+				section: s,
+				tasks: this.sortByStartDate
+					? sectionTasks.sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+					: sectionTasks
+			};
+		})
 	);
 
 	// Derive from tasksBySection to avoid duplicate filtering/sorting
