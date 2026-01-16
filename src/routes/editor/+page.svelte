@@ -8,6 +8,7 @@
 	import { createClipboardWatcherStore, setClipboardWatcherContext } from '$lib/stores/clipboard-watcher.svelte';
 	import { getThemeContext } from '$lib/stores/theme-store.svelte';
 	import { createSettingsStore, setSettingsContext } from '$lib/stores/settings-store.svelte';
+	import { createHotkeyToastStore, setHotkeyToastContext } from '$lib/stores/hotkey-toast-store.svelte';
 	import { BUILTIN_TEMPLATES } from '$lib/data/templates';
 	import {
 		LayoutGrid, Moon, Sun, Undo2, Redo2, Clock,
@@ -29,6 +30,7 @@
 	import FileDropZone from '$lib/components/io/FileDropZone.svelte';
 	import Settings from '$lib/components/settings/Settings.svelte';
 	import ClipboardToast from '$lib/components/ui/ClipboardToast.svelte';
+	import HotkeyToast from '$lib/components/ui/HotkeyToast.svelte';
 	import ProjectPicker from '$lib/components/persistence/ProjectPicker.svelte';
 	import SaveStatus from '$lib/components/persistence/SaveStatus.svelte';
 	import VersionHistory from '$lib/components/persistence/VersionHistory.svelte';
@@ -56,6 +58,7 @@
 	const template = createTemplateStore(BUILTIN_TEMPLATES);
 	const clipboardWatcher = createClipboardWatcherStore();
 	const settings = createSettingsStore();
+	const hotkeyToast = createHotkeyToastStore();
 	const theme = getThemeContext();
 
 	// Provide context
@@ -66,6 +69,7 @@
 	setTemplateContext(template);
 	setClipboardWatcherContext(clipboardWatcher);
 	setSettingsContext(settings);
+	setHotkeyToastContext(hotkeyToast);
 
 	// Track data hash for change detection
 	let lastDataHash = '';
@@ -185,7 +189,7 @@
 				<span class="text-tertiary">/</span>
 				<ProjectPicker />
 				<button
-					onclick={() => persistence.openFileBrowser()}
+					onclick={() => { persistence.openFileBrowser(); hotkeyToast.show('openFileBrowser'); }}
 					class="btn-ghost"
 					title="Browse Projects ({modKey}+B)"
 				>
@@ -198,7 +202,7 @@
 			<div class="flex items-center gap-2">
 				<!-- New Task -->
 				<button
-					onclick={() => gantt.addTask()}
+					onclick={() => { gantt.addTask(); hotkeyToast.show('newTask'); }}
 					class="btn-primary text-sm py-1.5"
 				>
 					<Plus size={16} />
@@ -209,7 +213,7 @@
 
 				<!-- Undo/Redo -->
 				<button
-					onclick={() => gantt.undo()}
+					onclick={() => { gantt.undo(); hotkeyToast.show('undo'); }}
 					disabled={!gantt.canUndo}
 					class="btn-ghost"
 					title="Undo ({modKey}+Z)"
@@ -217,7 +221,7 @@
 					<Undo2 size={18} />
 				</button>
 				<button
-					onclick={() => gantt.redo()}
+					onclick={() => { gantt.redo(); hotkeyToast.show('redo'); }}
 					disabled={!gantt.canRedo}
 					class="btn-ghost"
 					title="Redo ({modKey}+Shift+Z)"
@@ -227,7 +231,7 @@
 
 				<!-- Version History -->
 				<button
-					onclick={() => persistence.openHistory()}
+					onclick={() => { persistence.openHistory(); hotkeyToast.show('openHistory'); }}
 					class="btn-ghost"
 					title="Version History ({modKey}+H)"
 				>
@@ -238,21 +242,21 @@
 
 				<!-- Import/Export -->
 				<button
-					onclick={() => keyboard.openImport()}
+					onclick={() => { keyboard.openImport(); hotkeyToast.show('openImport'); }}
 					class="btn-secondary text-sm py-1.5"
 					title="Import ({modKey}+O)"
 				>
 					Import
 				</button>
 				<button
-					onclick={() => keyboard.openExport()}
+					onclick={() => { keyboard.openExport(); hotkeyToast.show('openExport'); }}
 					class="btn-secondary text-sm py-1.5"
 					title="Export ({modKey}+S)"
 				>
 					Export
 				</button>
 				<button
-					onclick={() => keyboard.openMermaidPreview()}
+					onclick={() => { keyboard.openMermaidPreview(); hotkeyToast.show('openMermaidPreview'); }}
 					class="btn-ghost"
 					title="Mermaid Preview ({modKey}+M)"
 				>
@@ -263,7 +267,7 @@
 
 				<!-- Help -->
 				<button
-					onclick={() => keyboard.openHelp()}
+					onclick={() => { keyboard.openHelp(); hotkeyToast.show('openHelp'); }}
 					class="btn-ghost"
 					title="Keyboard shortcuts (F1)"
 				>
@@ -353,6 +357,7 @@
 	<FileBrowser />
 	<FileDropZone onFileDrop={handleFileDrop} />
 	<ClipboardToast />
+	<HotkeyToast />
 </div>
 
 <style>

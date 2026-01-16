@@ -65,16 +65,6 @@
 			{/each}
 			<span class="hint-text">{hint.suffix2}</span>
 		{/if}
-
-		<button
-			onclick={() => onboarding.toggleHints()}
-			class="hint-close"
-			aria-label="Hide hints"
-		>
-			<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-			</svg>
-		</button>
 	</div>
 {/if}
 
@@ -115,16 +105,4 @@
 	.hint-key:global(.kbd-medium) { min-width: 1.5rem; }
 	.hint-key:global(.kbd-narrow) { min-width: 1.25rem; }
 	.hint-key:global(.kbd-space) { min-width: 2.5rem; }
-
-	.hint-close {
-		margin-left: 0.25rem;
-		padding: 0.125rem;
-		color: var(--color-text-tertiary);
-		border-radius: 0.125rem;
-		transition: color 0.15s ease;
-	}
-
-	.hint-close:hover {
-		color: var(--color-text-secondary);
-	}
 </style>
