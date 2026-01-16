@@ -76,6 +76,9 @@ export interface KeyBinding {
 export type KeyCategory = 'navigation' | 'task' | 'timeline' | 'global';
 
 // Onboarding types
+export type TutorialCleanup = 'closeModals' | 'closeEditor';
+export type TutorialMode = 'quick' | 'extended' | 'complete';
+
 export interface TutorialStep {
 	id: string;
 	title: string;
@@ -83,6 +86,7 @@ export interface TutorialStep {
 	action: string; // Action user must perform to advance
 	targetSelector?: string; // CSS selector for highlighting
 	keys: string[]; // Keys to display
+	cleanup?: TutorialCleanup; // Reset UI state after step completes
 }
 
 // Command palette types

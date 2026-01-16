@@ -1,8 +1,56 @@
 <script lang="ts">
-	import { getOnboardingContext, tutorialSteps } from '$lib/stores/onboarding-store.svelte';
-	import { getKeyWidthClass } from '$lib/stores/keyboard-store.svelte';
+	import { getOnboardingContext, quickTutorialSteps, extendedTutorialSteps } from '$lib/stores/onboarding-store.svelte';
+	import { getKeyWidthClass, getKeyboardContext } from '$lib/stores/keyboard-store.svelte';
+	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
+	import type { TutorialCleanup } from '$lib/types';
 
 	const onboarding = getOnboardingContext();
+	const keyboard = getKeyboardContext();
+	const gantt = getGanttContext();
+
+	const CLEANUP_DELAY_MS = 1500;
+	let cleanupProgress = $state(0);
+	let cleanupTimerId = $state<ReturnType<typeof setInterval> | null>(null);
+
+	// Detect macOS
+	const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+	// Set up cleanup callback
+	onboarding.setCleanupCallback((cleanup: TutorialCleanup) => {
+		if (cleanup === 'closeModals') {
+			keyboard.closeAllModals();
+		} else if (cleanup === 'closeEditor') {
+			gantt.view.editingTaskId = null;
+		}
+	});
+
+	// Watch for pending cleanup and start timer
+	$effect(() => {
+		if (onboarding.pendingCleanup) {
+			cleanupProgress = 0;
+			const startTime = Date.now();
+			const interval = 16; // ~60fps
+
+			cleanupTimerId = setInterval(() => {
+				const elapsed = Date.now() - startTime;
+				cleanupProgress = Math.min((elapsed / CLEANUP_DELAY_MS) * 100, 100);
+
+				if (elapsed >= CLEANUP_DELAY_MS) {
+					if (cleanupTimerId) clearInterval(cleanupTimerId);
+					cleanupTimerId = null;
+					onboarding.runCleanup();
+					onboarding.advanceStep();
+				}
+			}, interval);
+		}
+
+		return () => {
+			if (cleanupTimerId) {
+				clearInterval(cleanupTimerId);
+				cleanupTimerId = null;
+			}
+		};
+	});
 
 	let pressedKeys = $state<string[]>([]);
 	let targetRect = $state<DOMRect | null>(null);
@@ -11,8 +59,14 @@
 	const KEY_MAP: Record<string, string> = {
 		Control: 'Ctrl', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→'
 	};
-	const MODIFIERS = ['Ctrl', 'Shift', 'Alt', 'Cmd', 'Meta'];
+	const MODIFIERS = ['Ctrl', 'Shift', 'Alt', 'Cmd', 'Meta', '⌘'];
 	const normalizeKey = (key: string) => KEY_MAP[key] ?? (key.length === 1 ? key.toUpperCase() : key);
+
+	// Format key for display - show ⌘ on Mac instead of Ctrl
+	function formatKeyForDisplay(key: string): string {
+		if (key === 'Ctrl' && isMac) return '⌘';
+		return key;
+	}
 
 	const isCombo = $derived(
 		onboarding.currentStep?.keys.some((k) => MODIFIERS.includes(k)) ?? false
@@ -116,11 +170,70 @@
 				></div>
 			</div>
 
-			{#if onboarding.currentStep}
+			{#if onboarding.pendingCleanup}
+				<!-- Cleanup Timer -->
+				<div class="p-6">
+					<div class="text-xs font-medium text-green-500 mb-2">
+						✓ Nice work!
+					</div>
+					<h2 class="text-lg font-bold text-primary mb-1">
+						{onboarding.currentStep?.title}
+					</h2>
+					<p class="text-sm text-secondary mb-4">
+						Resetting for next step...
+					</p>
+					<!-- Circular progress timer -->
+					<div class="flex justify-center">
+						<div class="cleanup-timer">
+							<svg viewBox="0 0 36 36" class="w-16 h-16">
+								<path
+									class="timer-bg"
+									d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+								/>
+								<path
+									class="timer-progress"
+									stroke-dasharray="{cleanupProgress}, 100"
+									d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+								/>
+							</svg>
+						</div>
+					</div>
+				</div>
+			{:else if onboarding.showContinuePrompt}
+				<!-- Continue Learning Prompt -->
+				<div class="p-6">
+					<div class="text-xs font-medium text-accent mb-2">
+						Quick Tutorial Complete!
+					</div>
+					<h2 class="text-lg font-bold text-primary mb-1">
+						Keep Learning?
+					</h2>
+					<p class="text-sm text-secondary mb-4">
+						You've mastered the basics! Would you like to continue with {extendedTutorialSteps.length} more advanced shortcuts?
+					</p>
+					<div class="flex gap-2 justify-center">
+						<button
+							onclick={() => onboarding.finishQuickTutorial()}
+							class="btn-secondary text-sm py-2 px-4"
+						>
+							Done for now
+						</button>
+						<button
+							onclick={() => onboarding.continueWithExtended()}
+							class="btn-primary text-sm py-2 px-4"
+						>
+							Continue learning
+						</button>
+					</div>
+				</div>
+			{:else if onboarding.currentStep}
 				<div class="p-6">
 					<!-- Step indicator -->
 					<div class="text-xs font-medium text-accent mb-2">
-						Step {onboarding.currentStepIndex + 1} of {tutorialSteps.length}
+						Step {onboarding.currentStepIndex + 1} of {onboarding.totalSteps}
+						{#if onboarding.tutorialMode === 'extended' && onboarding.currentStepIndex >= quickTutorialSteps.length}
+							<span class="text-tertiary ml-1">(Advanced)</span>
+						{/if}
 					</div>
 
 					<!-- Title -->
@@ -136,11 +249,12 @@
 					<!-- Keys with press highlighting -->
 					<div class="keys-display">
 						{#each onboarding.currentStep.keys as key, i}
+							{@const displayKey = formatKeyForDisplay(key)}
 							<div
-								class="key-badge {getKeyWidthClass(key)}"
-								class:pressed={pressedKeys.includes(key)}
+								class="key-badge {getKeyWidthClass(displayKey)}"
+								class:pressed={pressedKeys.includes(key) || pressedKeys.includes(displayKey)}
 							>
-								{key}
+								{displayKey}
 							</div>
 							{#if i < onboarding.currentStep.keys.length - 1}
 								<span class="text-tertiary text-sm">{isCombo ? '+' : 'or'}</span>
@@ -261,5 +375,27 @@
 		padding: 0.75rem 1.5rem;
 		background-color: var(--color-surface-elevated);
 		border-top: 1px solid var(--color-border);
+	}
+
+	/* Circular timer styles */
+	.cleanup-timer {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.timer-bg {
+		fill: none;
+		stroke: var(--color-border);
+		stroke-width: 3;
+	}
+
+	.timer-progress {
+		fill: none;
+		stroke: var(--color-accent);
+		stroke-width: 3;
+		stroke-linecap: round;
+		transform: rotate(-90deg);
+		transform-origin: 50% 50%;
 	}
 </style>
