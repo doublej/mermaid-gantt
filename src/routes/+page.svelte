@@ -390,7 +390,7 @@
 		<div class="footer-inner">
 			<p class="footer-text">
 				Built with Svelte.
-				<a href="https://github.com/jjjjjjjjjjjjjj/mermaid-gantt" target="_blank" rel="noopener">Open source on GitHub</a>.
+				<a href="https://github.com/doublej/mermaid-gantt" target="_blank" rel="noopener">Open source on GitHub</a>.
 			</p>
 		</div>
 	</footer>
