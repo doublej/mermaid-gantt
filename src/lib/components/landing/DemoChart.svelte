@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createGanttStore, setGanttContext } from '$lib/stores/gantt-store.svelte';
+	import { createSettingsStore, setSettingsContext } from '$lib/stores/settings-store.svelte';
 	import { createDemoData } from '$lib/data/demo-data';
 	import GanttChart from '$lib/components/gantt/GanttChart.svelte';
 
@@ -13,6 +14,7 @@
 	// Create isolated store with demo data
 	const gantt = createGanttStore(createDemoData());
 	setGanttContext(gantt);
+	setSettingsContext(createSettingsStore());
 
 	// Set to Week zoom for better landing page fit
 	gantt.view.zoomLevel = 1;
