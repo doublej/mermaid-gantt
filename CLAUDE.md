@@ -6,9 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 bun run dev      # Start dev server (usually port 5173)
-bun run build    # Production build
+bun run build    # Production build (writes to build/)
 bun run check    # TypeScript + Svelte type checking
+just cf-deploy   # Build + deploy to Cloudflare Pages (production)
 ```
+
+## Deployment
+
+Hosted on **Cloudflare Pages**. Project: `mermaid-gantt`. Production domain: `mermaidgantt.xyz` (Cloudflare DNS, proxied CNAME → `mermaid-gantt.pages.dev`).
+
+```bash
+just cf-deploy                # Production deploy (branch: main)
+just cf-deploy-preview foo    # Preview deploy on branch "foo"
+just cf-tail                  # Live deployment logs
+```
+
+Static build via `@sveltejs/adapter-static` → `build/`. Wrangler config in `wrangler.toml`.
 
 ## Architecture
 
