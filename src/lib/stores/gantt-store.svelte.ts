@@ -587,6 +587,11 @@ export class GanttStore {
 		this.view.dayWidth = ZOOM_LEVELS[0].dayWidth;
 	}
 
+	setZoomLevel(i: number): void {
+		this.view.zoomLevel = i;
+		this.view.dayWidth = ZOOM_LEVELS[i].dayWidth;
+	}
+
 	// Smooth zoom - continuous control
 	setDayWidth(width: number): void {
 		this.view.dayWidth = Math.max(1, Math.min(100, width));

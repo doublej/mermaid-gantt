@@ -25,7 +25,7 @@
 			<button
 				class="zoom-level"
 				class:active={gantt.view.zoomLevel === i}
-				onclick={() => gantt.view.zoomLevel = i}
+				onclick={() => gantt.setZoomLevel(i)}
 			>
 				{level.name}
 			</button>
