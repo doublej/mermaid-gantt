@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
 	import { getKeyboardContext } from '$lib/stores/keyboard-store.svelte';
+	import { getPersistenceContext } from '$lib/stores/persistence-store.svelte';
 	import { parseMermaidGantt, validateGanttData } from '$lib/utils/mermaid-parser';
 	import { exportToMermaid, exportToJson, importFromJson } from '$lib/utils/mermaid-exporter';
 	import { exportToCSV, downloadCSV } from '$lib/utils/csv-exporter';
@@ -12,6 +13,7 @@
 
 	const gantt = getGanttContext();
 	const keyboard = getKeyboardContext();
+	const persistence = getPersistenceContext();
 
 	// Import state
 	let importText = $state('');
@@ -93,14 +95,25 @@
 			}
 
 			gantt.importData(data);
+			applyImportedTitle(data);
 			close();
 		} catch (err) {
 			importError = err instanceof Error ? err.message : 'Failed to parse input';
 		}
 	}
 
+	// Keep the project name in sync with the imported chart title so the
+	// editor header / switcher matches the exported Mermaid title.
+	function applyImportedTitle(data: GanttData) {
+		const title = data.config.title?.trim();
+		if (title && persistence.currentProjectId) {
+			persistence.renameProject(persistence.currentProjectId, title);
+		}
+	}
+
 	function handleCSVImport(data: GanttData) {
 		gantt.importData(data);
+		applyImportedTitle(data);
 		close();
 	}
 
