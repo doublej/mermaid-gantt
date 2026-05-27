@@ -284,7 +284,7 @@
 				Delete Task
 			</h2>
 			<p class="text-secondary mb-6">
-				Are you sure you want to delete "<span class="font-medium text-primary">{pendingDeleteTitle}</span>"? This action cannot be undone.
+				Are you sure you want to delete "<span class="font-medium text-primary">{pendingDeleteTitle}</span>"? You can undo this with Cmd+Z.
 			</p>
 			<div class="flex gap-3 justify-end">
 				<button
