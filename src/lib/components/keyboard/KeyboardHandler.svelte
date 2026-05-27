@@ -14,11 +14,22 @@
 	let pendingDeleteId = $state<string | null>(null);
 	let pendingDeleteTitle = $state<string>('');
 
+	// Page-level actions are dispatched as 'gantt:action' for the page to handle.
+	// Skip them here so this component's own listener doesn't re-execute (and
+	// re-dispatch) them, which would loop into a stack overflow.
+	const PAGE_LEVEL_ACTIONS = new Set([
+		'switchGanttView',
+		'switchTableView',
+		'exportPdf',
+		'exportPng',
+		'fitAll'
+	]);
+
 	// Listen for programmatic action dispatch (e.g., from CommandPalette)
 	onMount(() => {
 		const handleActionEvent = (e: Event) => {
 			const action = (e as CustomEvent).detail?.action;
-			if (action) {
+			if (action && !PAGE_LEVEL_ACTIONS.has(action)) {
 				executeAction(action);
 				onboarding.onAction(action);
 			}
@@ -216,16 +227,12 @@
 				gantt.view.selectedTaskId = null;
 				return true;
 
-			// Page-level actions (dispatch event for page to handle)
-			case 'switchGanttView':
-			case 'switchTableView':
-			case 'exportPdf':
-			case 'exportPng':
-			case 'fitAll':
-				document.dispatchEvent(new CustomEvent('gantt:action', { detail: { action }, bubbles: true }));
-				return true;
-
 			default:
+				// Page-level actions (dispatch event for page to handle)
+				if (PAGE_LEVEL_ACTIONS.has(action)) {
+					document.dispatchEvent(new CustomEvent('gantt:action', { detail: { action }, bubbles: true }));
+					return true;
+				}
 				return false;
 		}
 	}
