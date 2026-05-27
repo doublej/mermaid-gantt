@@ -117,14 +117,10 @@
 					currentView = 'table';
 					break;
 				case 'exportPdf':
-					if (ganttElement) {
-						exportGanttToPDF(ganttElement, { filename: `${persistence.currentProject?.name ?? 'gantt'}.pdf` });
-					}
+					exportGanttToPDF(gantt.data, { filename: `${persistence.currentProject?.name ?? 'gantt'}.pdf` });
 					break;
 				case 'exportPng':
-					if (ganttElement) {
-						exportToPNG(ganttElement, { filename: `${persistence.currentProject?.name ?? 'gantt'}.png` });
-					}
+					exportToPNG(gantt.data, { filename: `${persistence.currentProject?.name ?? 'gantt'}.png` });
 					break;
 				case 'fitAll':
 					if (ganttElement) {
@@ -349,7 +345,7 @@
 	<ShortcutsHelp />
 	<Tutorial />
 	<TaskEditor />
-	<ImportExport {ganttElement} />
+	<ImportExport />
 	<SmartImport />
 	<MermaidPreview />
 	<Settings />

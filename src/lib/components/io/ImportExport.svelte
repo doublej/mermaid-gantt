@@ -4,17 +4,11 @@
 	import { parseMermaidGantt, validateGanttData } from '$lib/utils/mermaid-parser';
 	import { exportToMermaid, exportToJson, importFromJson } from '$lib/utils/mermaid-exporter';
 	import { exportToCSV, downloadCSV } from '$lib/utils/csv-exporter';
-	import { exportToPDF } from '$lib/utils/pdf-exporter';
+	import { exportGanttToPDF, type PageSize, type Orientation, type ScaleMode } from '$lib/utils/pdf-exporter';
 	import { exportToPNG } from '$lib/utils/png-exporter';
 	import { downloadBlob } from '$lib/utils/download';
 	import CSVImporter from './CSVImporter.svelte';
 	import type { GanttData } from '$lib/types';
-
-	interface Props {
-		ganttElement?: HTMLElement | null;
-	}
-
-	const { ganttElement = null }: Props = $props();
 
 	const gantt = getGanttContext();
 	const keyboard = getKeyboardContext();
@@ -44,6 +38,11 @@
 	let exportFormat = $state<'mermaid' | 'json' | 'csv'>('mermaid');
 	let copied = $state(false);
 	let exporting = $state<'pdf' | 'png' | null>(null);
+
+	// PDF export options
+	let pdfPageSize = $state<PageSize>('a4');
+	let pdfOrientation = $state<Orientation>('landscape');
+	let pdfScaleMode = $state<ScaleMode>('fit-width');
 
 	const EXPORTERS = { mermaid: () => exportToMermaid(gantt.data), json: () => exportToJson(gantt.data), csv: () => exportToCSV(gantt.data, { includeBOM: false }) };
 	const exportText = $derived(() => EXPORTERS[exportFormat]?.() ?? '');
@@ -133,12 +132,20 @@
 	}
 
 	async function handleImageExport(type: 'pdf' | 'png') {
-		if (!ganttElement) { importError = 'Gantt chart element not available'; return; }
 		exporting = type;
+		importError = null;
 		try {
 			const filename = `${gantt.data.config.title || 'gantt-chart'}.${type}`;
-			if (type === 'pdf') await exportToPDF(ganttElement, { orientation: 'landscape', filename });
-			else await exportToPNG(ganttElement, { scale: 2, filename });
+			if (type === 'pdf') {
+				await exportGanttToPDF(gantt.data, {
+					filename,
+					pageSize: pdfPageSize,
+					orientation: pdfOrientation,
+					scaleMode: pdfScaleMode
+				});
+			} else {
+				await exportToPNG(gantt.data, { scale: 2, filename });
+			}
 		} catch (err) {
 			importError = err instanceof Error ? err.message : `Failed to export ${type.toUpperCase()}`;
 		} finally {
@@ -320,11 +327,39 @@
 							<!-- Image export section -->
 							<div class="format-section">
 								<h4 class="format-label">Image Export</h4>
+
+								<!-- PDF options -->
+								<div class="pdf-options">
+									<label class="select-field">
+										<span>Page size</span>
+										<select bind:value={pdfPageSize} class="io-select">
+											<option value="a4">A4</option>
+											<option value="a3">A3</option>
+											<option value="letter">Letter</option>
+										</select>
+									</label>
+									<label class="select-field">
+										<span>Orientation</span>
+										<select bind:value={pdfOrientation} class="io-select">
+											<option value="landscape">Landscape</option>
+											<option value="portrait">Portrait</option>
+										</select>
+									</label>
+									<label class="select-field">
+										<span>Scale</span>
+										<select bind:value={pdfScaleMode} class="io-select">
+											<option value="fit-width">Fit to width</option>
+											<option value="actual-size">Actual size</option>
+											<option value="fit-page">Fit to one page</option>
+										</select>
+									</label>
+								</div>
+
 								<div class="export-buttons">
 									<button
 										onclick={() => handleImageExport('pdf')}
 										class="export-btn"
-										disabled={!ganttElement || exporting !== null}
+										disabled={exporting !== null}
 									>
 										<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -334,7 +369,7 @@
 									<button
 										onclick={() => handleImageExport('png')}
 										class="export-btn"
-										disabled={!ganttElement || exporting !== null}
+										disabled={exporting !== null}
 									>
 										<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -349,11 +384,9 @@
 										<span>Mermaid Preview</span>
 									</a>
 								</div>
-								{#if !ganttElement}
-									<p class="text-xs text-secondary mt-2">
-										Image export requires the Gantt chart to be visible.
-									</p>
-								{/if}
+								<p class="text-xs text-secondary mt-2">
+									Exports the entire schedule (all tasks and the full date range), not just the visible area.
+								</p>
 							</div>
 
 							{#if importError}
@@ -502,6 +535,36 @@
 		letter-spacing: 0.05em;
 		color: var(--color-text-secondary);
 		margin-bottom: 0.75rem;
+	}
+
+	.pdf-options {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-bottom: 0.75rem;
+	}
+
+	.select-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		font-size: 0.75rem;
+		color: var(--color-text-secondary);
+	}
+
+	.io-select {
+		padding: 0.375rem 0.5rem;
+		font-size: 0.8125rem;
+		color: var(--color-text);
+		background-color: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 0.375rem;
+		cursor: pointer;
+	}
+
+	.io-select:focus {
+		outline: none;
+		border-color: var(--color-accent);
 	}
 
 	.export-buttons {

@@ -27,6 +27,7 @@
     "@lucide/svelte": "^0.562.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",
-    "mermaid": "^11.12.2"
+    "mermaid": "^11.12.2",
+    "svg2pdf.js": "^2.7.0"
   }
 }
