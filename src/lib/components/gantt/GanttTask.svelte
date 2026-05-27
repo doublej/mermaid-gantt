@@ -327,8 +327,8 @@
 		/>
 	{/if}
 
-	<!-- Focus ring -->
-	{#if isFocused && !isDragging}
+	<!-- Focus ring — only when focused without selection, so the selected task shows a single primary treatment -->
+	{#if isFocused && !isSelected && !isDragging}
 		<rect
 			x={previewX - 2}
 			y={y - 2}

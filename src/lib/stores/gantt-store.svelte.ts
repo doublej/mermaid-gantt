@@ -344,13 +344,18 @@ export class GanttStore {
 		this.saveHistory(`Delete section: ${section.name}`);
 	}
 
-	// Navigation
+	// Navigation — keep selection in sync with focus so only one task is "active"
+	private setFocus(id: string | null): void {
+		this.view.focusedTaskId = id;
+		this.view.selectedTaskId = id;
+	}
+
 	private focusTaskByOffset(offset: 1 | -1): void {
 		const tasks = this.allTasksFlat;
-		if (tasks.length === 0) { this.view.focusedTaskId = null; return; }
+		if (tasks.length === 0) { this.setFocus(null); return; }
 		const currentIdx = tasks.findIndex((t) => t.id === this.view.focusedTaskId);
 		const newIdx = currentIdx === -1 ? 0 : Math.max(0, Math.min(tasks.length - 1, currentIdx + offset));
-		this.view.focusedTaskId = tasks[newIdx].id;
+		this.setFocus(tasks[newIdx].id);
 	}
 
 	focusNextTask(): void { this.focusTaskByOffset(1); }
@@ -358,12 +363,12 @@ export class GanttStore {
 
 	focusFirstTask(): void {
 		const tasks = this.allTasksFlat;
-		this.view.focusedTaskId = tasks[0]?.id ?? null;
+		this.setFocus(tasks[0]?.id ?? null);
 	}
 
 	focusLastTask(): void {
 		const tasks = this.allTasksFlat;
-		this.view.focusedTaskId = tasks[tasks.length - 1]?.id ?? null;
+		this.setFocus(tasks[tasks.length - 1]?.id ?? null);
 	}
 
 	selectFocusedTask(): void {
