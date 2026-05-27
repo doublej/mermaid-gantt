@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "mermaid_gantt",
+  "project_id": "2e0987e0-87cf-4488-befb-c3e653541e32"
+}

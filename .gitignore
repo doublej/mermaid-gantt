@@ -7,3 +7,8 @@ build/
 .mcp.json
 .DS_Store
 *.local
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
