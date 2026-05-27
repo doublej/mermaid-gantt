@@ -29,7 +29,7 @@ export const keyBindings: KeyBinding[] = [
 	{ key: 'V', modifiers: ['ctrl'], action: 'pasteTask', description: 'Paste task', category: 'task' },
 	{ key: 'd', modifiers: ['ctrl'], action: 'duplicateTask', description: 'Duplicate task', category: 'task' },
 	{ key: 'D', modifiers: ['ctrl'], action: 'duplicateTask', description: 'Duplicate task', category: 'task' },
-	{ key: 'F2', modifiers: [], action: 'renameTask', description: 'Rename task inline', category: 'task' },
+	{ key: 'F2', modifiers: [], action: 'renameTask', description: 'Edit task', category: 'task' },
 
 	// Timeline
 	{ key: '=', modifiers: ['ctrl'], action: 'zoomIn', description: 'Zoom in', category: 'timeline' },

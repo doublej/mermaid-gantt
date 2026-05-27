@@ -112,8 +112,8 @@ export const KEYBOARD_LESSONS: KeyboardLesson[] = [
 		category: 'task',
 		keys: ['F2'],
 		action: 'renameTask',
-		description: 'Rename task inline',
-		instruction: 'Press F2 to rename the selected task'
+		description: 'Edit task',
+		instruction: 'Press F2 to edit the selected task'
 	},
 
 	// Timeline
