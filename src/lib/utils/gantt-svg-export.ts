@@ -1,5 +1,6 @@
 import type { GanttData, Task } from '$lib/types';
 import { addDays, diffDays, getDateRange, isWeekend } from './date-utils';
+import { DM_SANS_STACK, getEmbeddedFontFaceCss } from './export-fonts';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -62,6 +63,11 @@ function resolveColors(): ResolvedColors {
 
 function el(tag: string, attrs: Record<string, string | number>): SVGElement {
 	const node = document.createElementNS(SVG_NS, tag);
+	// Brand font on every text node so svg2pdf (vector) and rasterized SVG (PNG)
+	// both render in DM Sans instead of falling back to Times/Helvetica.
+	if (tag === 'text' && !('font-family' in attrs)) {
+		node.setAttribute('font-family', DM_SANS_STACK);
+	}
 	for (const [k, v] of Object.entries(attrs)) {
 		node.setAttribute(k, String(v));
 	}
@@ -141,7 +147,9 @@ function computeLayout(data: GanttData, dayWidth: number): Layout {
 			positions.push({
 				task,
 				x: startOffset * dayWidth,
-				y: rowY,
+				// Inset the bar within the row so it is vertically centred (matches
+				// GanttChart.svelte, which renders the bar at pos.y + BAR_INSET).
+				y: rowY + BAR_INSET,
 				width: duration * dayWidth,
 				height: EXPORT_ROW_HEIGHT - 2 * BAR_INSET,
 				rowIndex
@@ -414,7 +422,8 @@ function drawSidebar(
 		x: 16,
 		y: EXPORT_HEADER_HEIGHT / 2 + 5,
 		'font-size': 13,
-		'font-weight': 600,
+		// Use 700 (registered as "bold"); svg2pdf can't resolve 600 ("600normal").
+		'font-weight': 700,
 		fill: colors.text
 	});
 	titleText.appendChild(textNode(title || 'Tasks'));
@@ -474,6 +483,7 @@ export function buildGanttExportSVG(data: GanttData, options: ExportSVGOptions =
 	svg.setAttribute('width', String(width));
 	svg.setAttribute('height', String(height));
 	svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+	svg.setAttribute('font-family', DM_SANS_STACK);
 
 	// Page background
 	svg.appendChild(el('rect', { x: 0, y: 0, width, height, fill: colors.surface }));
@@ -506,4 +516,19 @@ export function buildGanttExportSVG(data: GanttData, options: ExportSVGOptions =
 /** Serialize the export SVG to a standalone XML string. */
 export function serializeExportSVG(svg: SVGSVGElement): string {
 	return new XMLSerializer().serializeToString(svg);
+}
+
+/**
+ * Serialize the export SVG with DM Sans embedded as `@font-face` data URIs, so
+ * a rasterized standalone SVG (PNG export) renders text in the brand font even
+ * though it has no access to the page's Google-Fonts-loaded DM Sans.
+ */
+export async function serializeExportSVGWithFonts(svg: SVGSVGElement): Promise<string> {
+	const css = await getEmbeddedFontFaceCss();
+	const clone = svg.cloneNode(true) as SVGSVGElement;
+	const style = document.createElementNS(SVG_NS, 'style');
+	style.setAttribute('type', 'text/css');
+	style.appendChild(document.createTextNode(css));
+	clone.insertBefore(style, clone.firstChild);
+	return new XMLSerializer().serializeToString(clone);
 }

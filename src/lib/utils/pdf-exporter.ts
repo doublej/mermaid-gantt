@@ -6,6 +6,7 @@ import {
 	type ExportSVGOptions
 } from './gantt-svg-export';
 import { captureElementAsCanvas } from './export-utils';
+import { registerDmSans, DM_SANS_FAMILY } from './export-fonts';
 
 export type PageSize = 'a4' | 'a3' | 'letter';
 export type Orientation = 'landscape' | 'portrait';
@@ -208,6 +209,10 @@ export async function exportGanttToPDF(data: GanttData, options: PDFExportOption
 		const page = pageDimensions(pageSize, orientation);
 		const pdf = new jsPDF({ orientation, unit: 'pt', format: [page.w, page.h] });
 
+		// Register DM Sans so svg2pdf renders the SVG text (which is tagged
+		// font-family: "DM Sans") in the brand font instead of Times/Helvetica.
+		await registerDmSans(pdf);
+
 		const contentW = page.w - MARGIN * 2;
 		// Reserve the metadata band on the first page only.
 		const scale = resolveScale(full, contentW, page.h - MARGIN * 2 - META_BAND, scaleMode);
@@ -225,9 +230,11 @@ export async function exportGanttToPDF(data: GanttData, options: PDFExportOption
 				const topOffset = MARGIN + (isFirst ? META_BAND : 0);
 
 				if (isFirst) {
+					pdf.setFont(DM_SANS_FAMILY, 'bold');
 					pdf.setFontSize(14);
 					pdf.setTextColor(20, 20, 20);
 					pdf.text(data.config.title || 'Gantt Chart', MARGIN, MARGIN + 12);
+					pdf.setFont(DM_SANS_FAMILY, 'normal');
 					pdf.setFontSize(9);
 					pdf.setTextColor(120, 120, 120);
 					pdf.text(`Exported ${new Date().toLocaleDateString()}`, MARGIN, MARGIN + 26);
@@ -247,7 +254,9 @@ export async function exportGanttToPDF(data: GanttData, options: PDFExportOption
 
 				holder.removeChild(tile.svg);
 
-				// Page footer with page number.
+				// Page footer with page number. svg2pdf may have changed the active
+				// font while rendering, so re-select DM Sans.
+				pdf.setFont(DM_SANS_FAMILY, 'normal');
 				pdf.setFontSize(8);
 				pdf.setTextColor(150, 150, 150);
 				pdf.text(`Page ${pageNum} / ${totalPages}`, page.w - MARGIN, page.h - 10, { align: 'right' });

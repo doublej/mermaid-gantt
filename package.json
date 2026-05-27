@@ -24,6 +24,7 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "@fontsource/dm-sans": "^5.2.8",
     "@lucide/svelte": "^0.562.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.0.0",

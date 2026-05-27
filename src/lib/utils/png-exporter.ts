@@ -1,7 +1,7 @@
 import { downloadBlob } from './download';
 import { captureElementAsCanvas } from './export-utils';
 import type { GanttData } from '$lib/types';
-import { buildGanttExportSVG, serializeExportSVG, type ExportSVGOptions } from './gantt-svg-export';
+import { buildGanttExportSVG, serializeExportSVGWithFonts, type ExportSVGOptions } from './gantt-svg-export';
 
 export interface PNGExportOptions {
 	scale?: number;
@@ -26,7 +26,9 @@ async function renderFullChartCanvas(
 	const fit = Math.min(maxDimension / width, maxDimension / height, scale);
 	const effectiveScale = Math.max(0.5, Math.min(scale, fit));
 
-	const svgString = serializeExportSVG(svg);
+	// Embed DM Sans as @font-face data URIs so the isolated SVG renders the
+	// brand font when rasterized (it can't see the page's loaded webfonts).
+	const svgString = await serializeExportSVGWithFonts(svg);
 	const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
 	const url = URL.createObjectURL(blob);
 
