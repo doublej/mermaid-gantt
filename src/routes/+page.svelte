@@ -14,22 +14,22 @@
 	const features = [
 		{
 			title: 'Keyboard-First',
-			description: 'Navigate, edit, and manage tasks with your keyboard. Mouse optional.',
+			description: 'Add, move, and reschedule tasks without reaching for the mouse. Every action has a shortcut.',
 			icon: 'keyboard'
 		},
 		{
 			title: 'Mermaid Syntax',
-			description: 'Import and export standard Mermaid Gantt charts. Version control friendly.',
+			description: 'Import and export standard Mermaid. Your timeline is plain text — diff it, review it in PRs, drop it in any Markdown file.',
 			icon: 'code'
 		},
 		{
 			title: 'Visual Editing',
-			description: 'Drag to resize, click to edit. See your timeline come to life.',
+			description: 'Drag to reschedule, drag an edge to resize, click to rename. The chart reacts as fast as you think.',
 			icon: 'chart'
 		},
 		{
 			title: 'Offline-First',
-			description: 'Your data stays in your browser. No signup, no cloud, complete privacy.',
+			description: 'Everything runs in your browser. No account, no cloud, no one else touching your plans.',
 			icon: 'lock'
 		}
 	];
@@ -39,7 +39,7 @@
 	<title>Mermaid Gantt — Plan at the speed of thought</title>
 	<meta
 		name="description"
-		content="Keyboard-first Gantt chart editor with Mermaid syntax. Plan visually, export as code. No signup required."
+		content="Build Gantt charts with your keyboard and plain-text Mermaid. Diff them in Git, drop them in any Markdown file, and keep your data in your browser. Free, no signup."
 	/>
 </svelte:head>
 
@@ -73,8 +73,8 @@
 					Plan at the<br />speed of thought
 				</h1>
 				<p class="hero-tagline">
-					Keyboard-first Gantt charts with Mermaid syntax.<br />
-					Your fingers never leave the keyboard.
+					A keyboard-first Gantt editor built on plain-text Mermaid.<br />
+					Type your plan, watch the timeline build itself — no mouse, no signup, no lock-in.
 				</p>
 				<div class="hero-cta">
 					<a href="/editor" class="btn-primary">
@@ -95,8 +95,8 @@
 		<div class="section-inner">
 			<h2 class="section-title">Code ↔ Visual</h2>
 			<p class="section-desc">
-				Write Mermaid syntax, see the timeline. Edit visually, export as code.<br />
-				Bidirectional sync keeps everything in harmony.
+				Write Mermaid, see the timeline. Drag a bar, the code updates.<br />
+				Edit either side — they stay in sync, so your chart always matches your repo.
 			</p>
 			<div class="code-visual-grid">
 				<div class="code-panel">
@@ -190,7 +190,7 @@
 			<div class="comparison-header">
 				<span class="comparison-label">The Honest Truth</span>
 				<h2 class="comparison-title">Mermaid vs Paid Gantt Tools</h2>
-				<p class="comparison-desc">A practical comparison for teams evaluating their options.</p>
+				<p class="comparison-desc">Where Mermaid wins, and where a paid tool earns its price. No spin.</p>
 			</div>
 
 			<!-- Quick Comparison Table -->
@@ -376,8 +376,8 @@
 	<!-- CTA -->
 	<section class="cta-section">
 		<div class="section-inner cta-inner">
-			<h2 class="cta-title">Ready to plan?</h2>
-			<p class="cta-desc">No signup. Your data stays local. Open source.</p>
+			<h2 class="cta-title">Ready to plan at the speed of thought?</h2>
+			<p class="cta-desc">No signup. Your data stays local. Free and open source.</p>
 			<a href="/editor" class="btn-primary btn-lg">
 				Start Planning
 				<ArrowRight size={20} />
