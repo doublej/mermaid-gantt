@@ -40,6 +40,7 @@
 	import type { FileType } from '$lib/components/io/FileDropZone.svelte';
 	import { exportGanttToPDF } from '$lib/utils/pdf-exporter';
 	import { exportToPNG } from '$lib/utils/png-exporter';
+	import { registerWebMcpTools } from '$lib/utils/webmcp';
 
 	// View state
 	type ViewMode = 'gantt' | 'table';
@@ -87,6 +88,9 @@
 	$effect(() => {
 		gantt.sortByStartDate = settings.sortTasksByStartDate;
 	});
+
+	// Expose editor tools to in-browser AI agents (WebMCP), when supported
+	onMount(() => registerWebMcpTools(gantt));
 
 	// Show tutorial on first visit + setup persistence
 	onMount(() => {
