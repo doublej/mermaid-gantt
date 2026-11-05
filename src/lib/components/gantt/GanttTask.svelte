@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Task, MenuItem } from '$lib/types';
+	import type { LabelPosition } from '$lib/stores/settings-store.svelte';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
 	import { Pencil, Copy, Trash2, Circle, Palette } from '@lucide/svelte';
 
@@ -13,10 +14,11 @@
 		isFocused: boolean;
 		isSelected: boolean;
 		isInMultiSelect?: boolean;
+		labelPosition?: LabelPosition;
 		onContextMenu?: (taskId: string, x: number, y: number, items: MenuItem[]) => void;
 	}
 
-	let { task, x, y, width, height, dayWidth, isFocused, isSelected, isInMultiSelect = false, onContextMenu }: Props = $props();
+	let { task, x, y, width, height, dayWidth, isFocused, isSelected, isInMultiSelect = false, labelPosition = 'inside', onContextMenu }: Props = $props();
 
 	const gantt = getGanttContext();
 
@@ -274,8 +276,17 @@
 			/>
 		{/if}
 
-		<!-- Task label (if width allows) -->
-		{#if previewWidth > 60}
+		<!-- Task label -->
+		{#if labelPosition === 'beside'}
+			<text
+				x={previewX + previewWidth + 6}
+				y={y + height / 2 + 4}
+				fill="var(--color-text)"
+				class="text-xs font-medium pointer-events-none"
+			>
+				{task.title}
+			</text>
+		{:else if previewWidth > 60}
 			<text
 				x={previewX + 8}
 				y={y + height / 2 + 4}

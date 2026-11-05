@@ -62,6 +62,31 @@
 						<span class="toggle-knob"></span>
 					</button>
 				</div>
+
+				<div class="setting-divider"></div>
+
+				<div class="setting-row">
+					<div class="setting-info">
+						<span class="setting-label">Task label position</span>
+						<span class="setting-description">Display task labels inside the bar or beside it</span>
+					</div>
+					<div class="segmented-control" role="radiogroup" aria-label="Label position">
+						<button
+							class="segment"
+							class:active={settings.labelPosition === 'inside'}
+							onclick={() => settings.setLabelPosition('inside')}
+							role="radio"
+							aria-checked={settings.labelPosition === 'inside'}
+						>Inside</button>
+						<button
+							class="segment"
+							class:active={settings.labelPosition === 'beside'}
+							onclick={() => settings.setLabelPosition('beside')}
+							role="radio"
+							aria-checked={settings.labelPosition === 'beside'}
+						>Beside</button>
+					</div>
+				</div>
 			</div>
 
 			<!-- Footer -->
@@ -119,6 +144,41 @@
 	.setting-description {
 		font-size: 0.75rem;
 		color: var(--color-text-secondary);
+	}
+
+	.setting-divider {
+		height: 1px;
+		background-color: var(--color-border);
+		margin: 1rem 0;
+	}
+
+	.segmented-control {
+		display: flex;
+		background-color: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.segment {
+		padding: 4px 12px;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-text-secondary);
+		background: transparent;
+		border: none;
+		cursor: pointer;
+		transition: background-color 0.15s, color 0.15s;
+	}
+
+	.segment:not(:last-child) {
+		border-right: 1px solid var(--color-border);
+	}
+
+	.segment.active {
+		background-color: var(--color-accent);
+		color: white;
 	}
 
 	.toggle-switch {

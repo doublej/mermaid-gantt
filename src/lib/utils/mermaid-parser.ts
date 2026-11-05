@@ -97,7 +97,7 @@ function parseTaskLine(line: string, ctx: ParseContext): void {
 		endDate = parsed ?? addDays(startDate, 1);
 	} else {
 		const days = parseDuration(durationSpec);
-		endDate = addDays(startDate, days - 1);
+		endDate = addDays(startDate, Math.max(0, days - 1));
 	}
 
 	const task: Task = {

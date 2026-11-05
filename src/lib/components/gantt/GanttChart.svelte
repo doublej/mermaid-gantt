@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getGanttContext } from '$lib/stores/gantt-store.svelte';
+	import { getSettingsContext } from '$lib/stores/settings-store.svelte';
 	import { getDateRange, diffDays, addDays, addMonths } from '$lib/utils/date-utils';
 	import GanttHeader from './GanttHeader.svelte';
 	import GanttGrid from './GanttGrid.svelte';
 	import GanttTask from './GanttTask.svelte';
 	import GanttDependency from './GanttDependency.svelte';
 	import ContextMenu from '../ui/ContextMenu.svelte';
-	import { ChevronDown } from '@lucide/svelte';
+	import SidebarEditableLabel from './SidebarEditableLabel.svelte';
+	import { ChevronDown, Trash2 } from '@lucide/svelte';
 	import type { MenuItem } from '$lib/types';
 
 	const gantt = getGanttContext();
+	const settings = getSettingsContext();
 
 	// Container ref for wheel event listener and size tracking
 	let containerEl: HTMLDivElement | undefined = $state();
@@ -40,7 +43,32 @@
 	// Layout constants
 	const ROW_HEIGHT = 40;
 	const HEADER_HEIGHT = 48;
-	const SIDEBAR_WIDTH = 200;
+	const sidebarWidth = $derived(settings.sidebarWidth);
+
+	// Sidebar resize drag state
+	let sidebarDragging = $state(false);
+	let sidebarDragStartX = $state(0);
+	let sidebarDragStartWidth = $state(0);
+
+	function startSidebarDrag(event: MouseEvent) {
+		event.preventDefault();
+		sidebarDragging = true;
+		sidebarDragStartX = event.clientX;
+		sidebarDragStartWidth = settings.sidebarWidth;
+		window.addEventListener('mousemove', handleSidebarDrag);
+		window.addEventListener('mouseup', endSidebarDrag);
+	}
+
+	function handleSidebarDrag(event: MouseEvent) {
+		const delta = event.clientX - sidebarDragStartX;
+		settings.setSidebarWidth(sidebarDragStartWidth + delta);
+	}
+
+	function endSidebarDrag() {
+		sidebarDragging = false;
+		window.removeEventListener('mousemove', handleSidebarDrag);
+		window.removeEventListener('mouseup', endSidebarDrag);
+	}
 
 	// Day width from store (supports smooth zoom)
 	const dayWidth = $derived(gantt.view.dayWidth);
@@ -69,7 +97,7 @@
 	const totalDays = $derived(diffDays(dateRange.start, dateRange.end) + 1);
 	const timelineWidth = $derived(totalDays * dayWidth);
 	// Chart width: use max of timeline width or available container width to fill space
-	const chartWidth = $derived(Math.max(timelineWidth, containerWidth - SIDEBAR_WIDTH));
+	const chartWidth = $derived(Math.max(timelineWidth, containerWidth - sidebarWidth));
 
 	// Task lookup map for O(1) parent lookups
 	const taskMap = $derived(new Map(gantt.data.tasks.map(t => [t.id, t])));
@@ -200,7 +228,30 @@
 		gantt.view.selectedTaskId = null;
 	}
 
+	// Inline sidebar rename state (separate from the modal's editingTaskId)
+	let editingSidebar = $state<{ kind: 'task' | 'section'; id: string } | null>(null);
+
+	function commitSidebarEdit(value: string) {
+		if (!editingSidebar) return;
+		const v = value.trim();
+		if (v) {
+			if (editingSidebar.kind === 'task') gantt.updateTask(editingSidebar.id, { title: v });
+			else gantt.updateSection(editingSidebar.id, { name: v });
+		}
+		editingSidebar = null; // empty/whitespace -> no write
+	}
+
+	function cancelSidebarEdit() {
+		editingSidebar = null;
+	}
+
+	function addPhase() {
+		const section = gantt.addSection('New phase');
+		editingSidebar = { kind: 'section', id: section.id }; // immediately rename
+	}
+
 	function handleTaskRowClick(taskId: string, event: MouseEvent) {
+		if (editingSidebar) return;
 		// Handle multi-select with Ctrl/Cmd and Shift
 		if (event.ctrlKey || event.metaKey) {
 			gantt.selectTask(taskId, true);
@@ -227,7 +278,7 @@
 	<!-- Sidebar with section/task names (sticky to stay visible on horizontal scroll) -->
 	<div
 		class="gantt-sidebar"
-		style:width="{SIDEBAR_WIDTH}px"
+		style:width="{sidebarWidth}px"
 		style:height="{chartHeight}px"
 	>
 		<!-- Header spacer -->
@@ -240,12 +291,33 @@
 
 		<!-- Task list -->
 		{#each gantt.tasksBySection as { section, tasks }}
-			<!-- Section header -->
+			<!-- Section header (double-click to rename) -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<div
 				class="section-header"
 				style:height="{ROW_HEIGHT}px"
+				ondblclick={() => (editingSidebar = { kind: 'section', id: section.id })}
 			>
-				{section.name}
+				<SidebarEditableLabel
+					value={section.name}
+					editing={editingSidebar?.kind === 'section' && editingSidebar.id === section.id}
+					oncommit={commitSidebarEdit}
+					oncancel={cancelSidebarEdit}
+				/>
+				{#if gantt.data.sections.length > 1}
+					<button
+						class="section-delete-btn"
+						onclick={(e) => {
+							e.stopPropagation();
+							gantt.deleteSection(section.id);
+						}}
+						aria-label="Delete phase"
+						title="Delete phase"
+					>
+						<Trash2 size={12} />
+					</button>
+				{/if}
 			</div>
 
 			<!-- Tasks in section -->
@@ -267,6 +339,7 @@
 						data-task-name={task.id}
 						data-task-focused={isFocused || undefined}
 						onclick={(e) => handleTaskRowClick(task.id, e)}
+						ondblclick={() => (editingSidebar = { kind: 'task', id: task.id })}
 					>
 						<!-- Expand/collapse chevron for parent tasks -->
 						{#if taskHasChildren}
@@ -290,12 +363,29 @@
 							<span class="color-dot" style:background-color={task.color}></span>
 						{/if}
 
-						<!-- Task title -->
-						<span class="task-title">{task.title}</span>
+						<!-- Task title (double-click to rename) -->
+						<SidebarEditableLabel
+							className="task-title"
+							value={task.title}
+							editing={editingSidebar?.kind === 'task' && editingSidebar.id === task.id}
+							oncommit={commitSidebarEdit}
+							oncancel={cancelSidebarEdit}
+						/>
 					</button>
 				{/if}
 			{/each}
 		{/each}
+
+		<!-- Add phase -->
+		<button class="add-phase-btn" onclick={addPhase}>+ Add phase</button>
+
+		<!-- Sidebar resize handle -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="sidebar-resize-handle"
+			class:active={sidebarDragging}
+			onmousedown={startSidebarDrag}
+		></div>
 	</div>
 
 	<!-- Main chart area -->
@@ -352,6 +442,7 @@
 					isFocused={gantt.view.focusedTaskId === pos.task.id}
 					isSelected={gantt.view.selectedTaskId === pos.task.id}
 					isInMultiSelect={gantt.view.selectedTaskIds.length > 1 && gantt.view.selectedTaskIds.includes(pos.task.id)}
+					labelPosition={settings.labelPosition}
 					onContextMenu={handleTaskContextMenu}
 				/>
 			{/each}
@@ -362,7 +453,7 @@
 	<!-- Extend buttons at edges -->
 	<button
 		class="extend-btn"
-		style:left="{SIDEBAR_WIDTH + 8}px"
+		style:left="{sidebarWidth + 8}px"
 		onclick={() => gantt.extendRangeStart(1)}
 		title="Extend timeline 1 month earlier"
 	>
@@ -429,6 +520,7 @@
 	.section-header {
 		display: flex;
 		align-items: center;
+		gap: 0.375rem;
 		padding: 0.25rem 1rem;
 		font-size: 0.75rem;
 		font-weight: 500;
@@ -437,6 +529,52 @@
 		color: var(--color-text-tertiary);
 		background-color: var(--color-surface-elevated);
 		border-bottom: 1px solid var(--color-border);
+	}
+
+	.section-delete-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-left: auto;
+		flex-shrink: 0;
+		padding: 2px;
+		background: transparent;
+		border: none;
+		border-radius: 4px;
+		color: var(--color-text-tertiary);
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+	}
+
+	.section-header:hover .section-delete-btn {
+		opacity: 1;
+	}
+
+	.section-delete-btn:hover {
+		color: var(--color-text);
+		background-color: var(--color-surface);
+	}
+
+	.add-phase-btn {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding: 0.5rem 1rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		text-align: left;
+		color: var(--color-text-tertiary);
+		background: transparent;
+		border: none;
+		border-top: 1px dashed var(--color-border);
+		cursor: pointer;
+		transition: color 0.15s, background-color 0.15s;
+	}
+
+	.add-phase-btn:hover {
+		color: var(--color-accent);
+		background-color: var(--color-surface-elevated);
 	}
 
 	.task-row {
@@ -511,6 +649,23 @@
 		height: 0.5rem;
 		border-radius: 50%;
 		flex-shrink: 0;
+	}
+
+	.sidebar-resize-handle {
+		position: absolute;
+		top: 0;
+		right: -2px;
+		width: 4px;
+		height: 100%;
+		cursor: col-resize;
+		z-index: 21;
+		border-right: 1px solid transparent;
+		transition: border-color 0.15s;
+	}
+
+	.sidebar-resize-handle:hover,
+	.sidebar-resize-handle.active {
+		border-right-color: var(--color-accent);
 	}
 
 	.gantt-chart {

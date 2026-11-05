@@ -30,12 +30,28 @@ gantt
 
 ### Rules
 1. Always include \`dateFormat YYYY-MM-DD\`
-2. Only ONE status per task (no "done, crit")
+2. Only ONE status per task — never combine statuses (e.g., NO \`:milestone, crit, ...\`)
 3. Only ONE dependency per task (no "after a b")
-4. Milestones use \`milestone\` status with \`0d\` duration
-5. Status comes BEFORE alias: \`:done, t1, ...\` not \`:t1, done, ...\`
-6. **CRITICAL**: Duration must ALWAYS be positive - use \`1d\` minimum (or \`0d\` for milestones). If using an end date, it MUST be after the start date
-7. For instant/single-day tasks, use \`1d\` duration, NOT the same date as start
+4. Status comes BEFORE alias: \`:done, t1, ...\` not \`:t1, done, ...\`
+5. **CRITICAL**: Duration must ALWAYS be positive — use \`1d\` minimum. The ONLY exception is \`0d\`, which is ONLY valid with \`milestone\` status
+6. For instant/single-day tasks, use \`1d\` duration, NOT the same date as start
+
+### Milestones
+Milestones mark key dates (phase completions, sign-offs, go-live, decision points). They MUST follow this exact format:
+
+**Correct:**
+\`Milestone Name :milestone, alias, start_or_after, 0d\`
+
+Examples:
+- \`Phase Complete :milestone, pc1, after dev1, 0d\` — end-of-phase marker
+- \`Go-live        :milestone, go1, 2024-06-01, 0d\` — fixed-date milestone
+
+**WRONG (never do this):**
+- \`:milestone, crit, lau1, after qa1, 0d\` — NO combined statuses
+- \`:crit, lau1, after qa1, 0d\` — this is a crit task, not a milestone
+- \`:milestone, m1, after dev1, 1d\` — milestones must use 0d
+
+When using \`after alias\`, the alias MUST reference a task defined earlier in the output.
 
 ## Conversion Guidelines
 
@@ -118,7 +134,7 @@ gantt
 
     section Launch
     QA Testing           :qa1, after spr3, 1w
-    Launch               :milestone, crit, lau1, after qa1, 0d
+    Launch               :milestone, lau1, after qa1, 0d
 \`\`\`
 
 ### Example 3: Meeting Notes
@@ -148,7 +164,7 @@ gantt
 
     section Phase 3
     Testing              :tes1, after bc1, 2w
-    Go-live              :milestone, crit, gol1, 2024-04-01, 0d
+    Go-live              :milestone, gol1, 2024-04-01, 0d
 \`\`\`
 
 ### Example 4: Learning Plan with Quick Tasks
